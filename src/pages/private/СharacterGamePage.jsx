@@ -26,6 +26,7 @@ const CharacterGamePage = () => {
 
     return () => clearInterval(interval); // component unmount bo‘lganda to‘xtatish
   }, [userId]);
+  
 
   return (
     <div
@@ -38,7 +39,7 @@ const CharacterGamePage = () => {
         {!character ? (
           <h1 className="text-3xl font-bold">ЖДИТЕ!</h1>
         ) : (
-          <CharacterList char={character} />
+          <CharacterList character={character} />
         )}
       </div>
     </div>

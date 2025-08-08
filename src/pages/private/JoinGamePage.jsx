@@ -108,6 +108,7 @@ const JoinGamePage = () => {
             className="border rounded-md w-80 h-8 text-center font-black text-xl"
           />
           <button
+            disabled={isJoining}
             type="submit"
             className="border rounded-md text-xl font-bold px-3 py-2 w-80 hover:bg-[#250506] hover:text-[#DBD0C0]"
           >

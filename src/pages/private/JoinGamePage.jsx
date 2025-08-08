@@ -10,13 +10,13 @@ const JoinGamePage = () => {
     e.preventDefault();
 
     try {
-      // 1. GAMES ni olib kelamiz
+      // 1. GAMES ro‘yxatini olamiz
       const res = await fetch(
         "https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES"
       );
       const games = await res.json();
 
-      // 2. customId bo‘yicha topamiz
+      // 2. customId bo‘yicha o‘yinni topamiz
       const foundGame = games.find((game) => game.customId === Number(gameId));
 
       if (!foundGame) {
@@ -24,7 +24,27 @@ const JoinGamePage = () => {
         return;
       }
 
-      // 3. GAMES/:id/USERS ga user qo‘shamiz
+      // 3. Shu o‘yindagi barcha userlarni olamiz
+      const usersRes = await fetch(
+        `https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES/${foundGame.id}/USERS`
+      );
+      const users = await usersRes.json();
+
+      // 4. Ism tekshiramiz (case-insensitive)
+      const exists = users.some(
+        (u) =>
+          u.name.trim().toLowerCase() ===
+          (username || "Player").trim().toLowerCase()
+      );
+
+      if (exists) {
+        alert(
+          "Bu ism bilan user allaqachon mavjud! Iltimos, boshqa ism tanlang."
+        );
+        return;
+      }
+
+      // 5. Agar ism unik bo‘lsa, user qo‘shamiz
       const userRes = await fetch(
         `https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES/${foundGame.id}/USERS`,
         {
@@ -39,8 +59,8 @@ const JoinGamePage = () => {
       );
 
       if (userRes.ok) {
-        const newUser = await userRes.json(); // yangi yaratilgan userni olamiz
-        navigate(`/character?userId=${newUser.id}`); // userId query orqali uzatish
+        const newUser = await userRes.json();
+        navigate(`/character?userId=${newUser.id}`);
       } else {
         alert("User qo‘shishda xatolik yuz berdi!");
       }

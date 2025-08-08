@@ -6,8 +6,6 @@ const CharacterGamePage = () => {
   const [searchParams] = useSearchParams();
   const userId = searchParams.get("userId");
 
-  console.log("Yuborilgan user ID:", userId);
-
   const [character, setCharacter] = useState(null);
 
   useEffect(() => {

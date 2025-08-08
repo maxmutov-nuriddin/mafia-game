@@ -6,8 +6,13 @@ const JoinGamePage = () => {
   const [gameId, setGameId] = useState("");
   const [username, setUsername] = useState("");
 
+  const [isJoining, setIsJoining] = useState(false);
+
   const handleJoin = async (e) => {
     e.preventDefault();
+
+    if (isJoining) return; // 🔹 Tugma bloklangan bo‘lsa qayt
+    setIsJoining(true); // 🔹 Bosilgandan keyin bloklaymiz
 
     try {
       // 1. GAMES ro‘yxatini olamiz
@@ -21,6 +26,7 @@ const JoinGamePage = () => {
 
       if (!foundGame) {
         alert("Bunday ID ga ega o'yin topilmadi!");
+        setIsJoining(false);
         return;
       }
 
@@ -30,7 +36,7 @@ const JoinGamePage = () => {
       );
       const users = await usersRes.json();
 
-      // 4. Ism tekshiramiz (case-insensitive)
+      // 4. Ism tekshiramiz
       const exists = users.some(
         (u) =>
           u.name.trim().toLowerCase() ===
@@ -41,17 +47,16 @@ const JoinGamePage = () => {
         alert(
           "Bu ism bilan user allaqachon mavjud! Iltimos, boshqa ism tanlang."
         );
+        setIsJoining(false);
         return;
       }
 
-      // 5. Agar ism unik bo‘lsa, user qo‘shamiz
+      // 5. User qo‘shamiz
       const userRes = await fetch(
         `https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES/${foundGame.id}/USERS`,
         {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             name: username || "Player",
           }),
@@ -66,6 +71,8 @@ const JoinGamePage = () => {
       }
     } catch (error) {
       console.error("Xatolik:", error);
+    } finally {
+      setIsJoining(false); // 🔹 Har holda blokni yechamiz
     }
   };
 

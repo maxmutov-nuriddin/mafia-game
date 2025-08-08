@@ -1,9 +1,21 @@
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 const CreateGamePage = ({ id, startGame }) => {
   const navigate = useNavigate();
-  const handleStart = () => {
-    startGame(id);
+  const [isStarting, setIsStarting] = useState(false); // 🔹 yangi state
+
+  const handleStart = async () => {
+    if (isStarting) return; // 🔹 qayta bosishni bloklash
+    setIsStarting(true);
+
+    try {
+      await startGame(id); // 🔹 startGame tugaguncha kutamiz
+    } catch (error) {
+      console.error("Xatolik:", error);
+    } finally {
+      setIsStarting(false); // 🔹 ishlash tugagach blokni yechamiz
+    }
   };
 
   const backBtn = () => {
@@ -25,9 +37,15 @@ const CreateGamePage = ({ id, startGame }) => {
         <div className="flex flex-col gap-4">
           <button
             onClick={handleStart}
-            className="border rounded-md text-xl font-bold px-3 py-2 w-80 hover:bg-[#250506] hover:text-[#DBD0C0]"
+            disabled={isStarting} // 🔹 tugmani bloklash
+            className={`border rounded-md text-xl font-bold px-3 py-2 w-80 
+              ${
+                isStarting
+                  ? "opacity-50 cursor-not-allowed"
+                  : "hover:bg-[#250506] hover:text-[#DBD0C0]"
+              }`}
           >
-            Начать игру!
+            {isStarting ? "Игра начинается..." : "Начать игру!"}
           </button>
         </div>
       </div>

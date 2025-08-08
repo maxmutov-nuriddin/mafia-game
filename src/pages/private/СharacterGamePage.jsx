@@ -23,7 +23,7 @@ const CharacterGamePage = () => {
     };
 
     fetchCharacter(); // birinchi marta yuklash
-    const interval = setInterval(fetchCharacter, 2000); // har 2 sekundda yangilash
+    const interval = setInterval(fetchCharacter, 5000); // har 2 sekundda yangilash
 
     return () => clearInterval(interval); // component unmount bo‘lganda to‘xtatish
   }, [userId]);

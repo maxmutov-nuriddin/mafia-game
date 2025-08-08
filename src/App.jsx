@@ -163,7 +163,6 @@ function App() {
       for (const [index, user] of users.entries()) {
         const assignedCharacter = finalRoles[index % finalRoles.length];
 
-        console.log(as);
 
         await fetch(
           `https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES/${found.id}/USERS/${user.id}`,

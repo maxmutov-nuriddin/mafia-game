@@ -49,12 +49,20 @@ const JoinGamePage = () => {
     }
   };
 
+  const backBtn = () => {
+    navigate("/");
+  };
+
   return (
     <div
       className="flex justify-center items-center flex-col h-[100vh] text-[#250506]"
       id="global-page"
     >
-      <div className="bg-[#DBD0C0] w-100 h-100 rounded-2xl flex flex-col items-center justify-center gap-5">
+      <div className="bg-[#DBD0C0] w-100 h-100 rounded-2xl flex flex-col items-center justify-center gap-5 relative">
+        <button onClick={backBtn} className="absolute top-5 left-5">
+          back
+        </button>
+
         <img src="/mafia-logo.png" className="w-20 h-20" alt="" />
         <h1 className="text-5xl font-black">Введите ID!</h1>
         <form className="flex flex-col gap-4" onSubmit={handleJoin}>

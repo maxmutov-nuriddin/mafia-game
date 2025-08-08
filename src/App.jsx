@@ -103,16 +103,34 @@ function App() {
     return newId;
   };
 
+  function delay(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  async function updateWithDelay(users, finalRoles, found) {
+    for (const [index, user] of users.entries()) {
+      const assignedCharacter = finalRoles[index % finalRoles.length];
+      console.log(`Assigning to ${user.id}:`, assignedCharacter);
+
+      await fetch(
+        `https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES/${found.id}/USERS/${user.id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ character: assignedCharacter }),
+        }
+      );
+
+      await delay(300); // 300 ms kutish
+    }
+  }
+
   const startGame = async (roomId) => {
     try {
-      // 1) Avvalo server-side filter bilan sinab ko'ramiz (agar ishlasa tezroq)
-
       const allRes = await fetch(
         "https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES"
       );
       const allGames = await allRes.json();
-
-      // roomId turlari farq qilishi mumkin — string/number, shuning uchun String() bilan solishtiramiz
       const found = allGames.find((g) => String(g.customId) === String(roomId));
 
       let res = await fetch(
@@ -120,7 +138,6 @@ function App() {
       );
       let games = await res.json();
 
-      // 2) Agar server-side filter natija bermasa, barcha GAMESni olib clientda filter qilamiz
       if (!games || games.length === 0) {
         if (!found) {
           alert("Bunday roomId ega o‘yin topilmadi.");
@@ -129,54 +146,31 @@ function App() {
         games = [found];
       }
 
-      // 4) Shu gameId ga tegishli userlarni olib kelamiz
       const usersRes = await fetch(
         `https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES/${found.id}/USERS`
       );
-
       const users = await usersRes.json();
+
       if (!users || users.length === 0) {
         alert("Bu roomdagi userlar topilmadi!");
         return;
       }
 
-      // 5) (Misol uchun) random character taqsimlash va PUT qilish
-
       const shuffled = [...characters].sort(() => 0.5 - Math.random());
-
       const mainRoleNames = getMainRoleNames(users.length);
-
-      // Asosiy rollar obyektini topamiz
       let mainRoles = mainRoleNames.map((roleName) =>
         shuffled.find((c) => c.name === roleName)
       );
 
-      // Qolganini Мирный житель bilan to‘ldiramiz
       const citizenRole = shuffled.find((c) => c.name === "Мирный житель");
       while (mainRoles.length < users.length) {
         mainRoles.push({ ...citizenRole });
       }
 
-      // Aralashtiramiz
       const finalRoles = [...mainRoles].sort(() => 0.5 - Math.random());
 
-      for (const [index, user] of users.entries()) {
-        const assignedCharacter = finalRoles[index % finalRoles.length];
-
-        console.log(assignedCharacter);
-        
-
-        await fetch(
-          `https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES/${found.id}/USERS/${user.id}`,
-          {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              character: assignedCharacter,
-            }),
-          }
-        );
-      }
+      // 🔹 PUT qilishni sekinlashtirib chaqiramiz
+      await updateWithDelay(users, finalRoles, found);
 
       alert("Barcha userlarga random character biriktirildi!");
     } catch (error) {
@@ -184,6 +178,87 @@ function App() {
       alert("Characterlar biriktirishda xatolik yuz berdi.");
     }
   };
+
+  // const startGame = async (roomId) => {
+  //   try {
+  //     // 1) Avvalo server-side filter bilan sinab ko'ramiz (agar ishlasa tezroq)
+
+  //     const allRes = await fetch(
+  //       "https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES"
+  //     );
+  //     const allGames = await allRes.json();
+
+  //     // roomId turlari farq qilishi mumkin — string/number, shuning uchun String() bilan solishtiramiz
+  //     const found = allGames.find((g) => String(g.customId) === String(roomId));
+
+  //     let res = await fetch(
+  //       `https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES?id=${found.id}`
+  //     );
+  //     let games = await res.json();
+
+  //     // 2) Agar server-side filter natija bermasa, barcha GAMESni olib clientda filter qilamiz
+  //     if (!games || games.length === 0) {
+  //       if (!found) {
+  //         alert("Bunday roomId ega o‘yin topilmadi.");
+  //         return;
+  //       }
+  //       games = [found];
+  //     }
+
+  //     // 4) Shu gameId ga tegishli userlarni olib kelamiz
+  //     const usersRes = await fetch(
+  //       `https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES/${found.id}/USERS`
+  //     );
+
+  //     const users = await usersRes.json();
+  //     if (!users || users.length === 0) {
+  //       alert("Bu roomdagi userlar topilmadi!");
+  //       return;
+  //     }
+
+  //     // 5) (Misol uchun) random character taqsimlash va PUT qilish
+
+  //     const shuffled = [...characters].sort(() => 0.5 - Math.random());
+
+  //     const mainRoleNames = getMainRoleNames(users.length);
+
+  //     // Asosiy rollar obyektini topamiz
+  //     let mainRoles = mainRoleNames.map((roleName) =>
+  //       shuffled.find((c) => c.name === roleName)
+  //     );
+
+  //     // Qolganini Мирный житель bilan to‘ldiramiz
+  //     const citizenRole = shuffled.find((c) => c.name === "Мирный житель");
+  //     while (mainRoles.length < users.length) {
+  //       mainRoles.push({ ...citizenRole });
+  //     }
+
+  //     // Aralashtiramiz
+  //     const finalRoles = [...mainRoles].sort(() => 0.5 - Math.random());
+
+  //     for (const [index, user] of users.entries()) {
+  //       const assignedCharacter = finalRoles[index % finalRoles.length];
+
+  //       console.log(assignedCharacter);
+
+  //       await fetch(
+  //         `https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES/${found.id}/USERS/${user.id}`,
+  //         {
+  //           method: "PUT",
+  //           headers: { "Content-Type": "application/json" },
+  //           body: JSON.stringify({
+  //             character: assignedCharacter,
+  //           }),
+  //         }
+  //       );
+  //     }
+
+  //     alert("Barcha userlarga random character biriktirildi!");
+  //   } catch (error) {
+  //     console.error("Xatolik:", error);
+  //     alert("Characterlar biriktirishda xatolik yuz berdi.");
+  //   }
+  // };
 
   return (
     <Router>

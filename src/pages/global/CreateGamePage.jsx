@@ -39,7 +39,7 @@ const CreateGamePage = ({ startGame }) => {
     };
 
     fetchUsers();
-    interval = setInterval(fetchUsers, 5000);
+    interval = setInterval(fetchUsers, 3500);
 
     return () => clearInterval(interval);
   }, [id]);

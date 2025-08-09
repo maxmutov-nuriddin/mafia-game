@@ -123,12 +123,12 @@ const GameStartPage = () => {
         id="global-page"
       >
         <div className="bg-[#DBD0C0] w-[100%] h-130 rounded-2xl flex flex-col items-center justify-center gap-5">
-          <h1 className="text-4xl font-bold">{formatTime(timeLeft)}</h1>
-          <button onClick={closeRoom}>Закрыть Комнату</button>
-          <button onClick={startTimer}>Продлить Комнату</button>
+          <h1 className="text-4xl font-black">{formatTime(timeLeft)}</h1>
+          <button className="border rounded-md text-xl font-bold px-3 py-2 w-60 md:w-80 hover:bg-[#250506] hover:text-[#DBD0C0]" onClick={closeRoom}>Закрыть Комнату</button>
+          <button className="border rounded-md text-xl font-bold px-3 py-2 w-60 md:w-80 hover:bg-[#250506] hover:text-[#DBD0C0]" onClick={startTimer}>Продлить Комнату</button>
         </div>
 
-        <div className="bg-[#DBD0C0] w-[100%] h-130 rounded-2xl overflow-auto grid grid-cols-3 auto-cols-fr items-center justify-center gap-2">
+        <div className="bg-[#DBD0C0] w-[100%] h-130 rounded-2xl overflow-auto grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 auto-cols-fr items-center justify-center gap-2">
           {games && games.length > 0 ? (
             games.map((character, index) => (
               <CharacterListCard

@@ -8,7 +8,7 @@ const CharacterListCard = ({ character }) => {
         id="card-bg-imgs"
       >
         <img
-          src={`/public/${character.img}`}
+          src={`/${character.img}`}
           alt={character.name}
           className="w-15 h-15  object-contain mx-auto"
         />

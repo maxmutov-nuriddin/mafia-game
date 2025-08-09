@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import CharacterList from "../../components/CharactersList";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
@@ -8,6 +8,7 @@ const CharacterGamePage = () => {
   const userId = searchParams.get("userId");
 
   const [character, setCharacter] = useState(null);
+  const oldDataRef = useRef(null); // oldData ni saqlash uchun ref
 
   useEffect(() => {
     const fetchCharacter = async () => {
@@ -15,7 +16,19 @@ const CharacterGamePage = () => {
         const res = await fetch(
           `https://6891e113447ff4f11fbe25b9.mockapi.io/USERS/${userId}`
         );
+
+        if (!res.ok) {
+          // Agar 500 xato bo‘lsa va oldin data bo‘lsa → qaytaramiz
+          if (res.status === 500 && oldDataRef.current) {
+            console.warn("Oldin data bor edi, lekin server 500 xato berdi.");
+            Navigate("/");
+            return;
+          }
+          throw new Error(`Server xatosi: ${res.status}`);
+        }
+
         const userData = await res.json();
+        oldDataRef.current = userData; // eski datani saqlash
         setCharacter(userData.character);
       } catch (err) {
         console.error("Failed to fetch character:", err);
@@ -23,10 +36,10 @@ const CharacterGamePage = () => {
     };
 
     fetchCharacter(); // birinchi marta yuklash
-    const interval = setInterval(fetchCharacter, 5000); // har 2 sekundda yangilash
+    const interval = setInterval(fetchCharacter, 5000);
 
-    return () => clearInterval(interval); // component unmount bo‘lganda to‘xtatish
-  }, [userId]);
+    return () => clearInterval(interval);
+  }, [userId, Navigate]);
 
   const backBtn = () => {
     Navigate("/");

@@ -1,7 +1,7 @@
-const CharacterListCard = ({ character }) => {
+const CharacterListCard = ({ character, onDelete  }) => {
 
   return (
-    <div className="grid grid-cols-1 w-full h-full gap-4 p-5">
+    <div onClick={onDelete} className="grid grid-cols-1 w-full h-full gap-4 p-5">
       <div
         key={character.id}
         className="p-4 border rounded shadow text-center flex flex-col  gap-2"

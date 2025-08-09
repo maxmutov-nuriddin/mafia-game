@@ -1,6 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import CharacterList from "../../components/CharactersListCard";
 import CharacterListCard from "../../components/CharactersListCard";
 
 const GameStartPage = () => {
@@ -28,11 +27,14 @@ const GameStartPage = () => {
     fetchData();
   }, [id]);
 
-
   const backBtn = () => {
     navigate("/");
   };
 
+  // 🔹 O‘chirish funksiyasi
+  const deleteCharacter = (userId) => {
+    setGames((prev) => prev.filter((c) => c.id !== userId));
+  };
   return (
     <>
       <div className="flex justify-between mx-5 rounded-3xl mt-5 px-5 py-1 bg-[#DBD0C0] items-center">
@@ -58,7 +60,11 @@ const GameStartPage = () => {
         <div className="bg-[#DBD0C0] w-[100%] h-130 rounded-2xl  overflow-auto grid grid-cols-3 auto-cols-fr  items-center justify-center gap-2">
           {games ? (
             games.map((character, index) => (
-              <CharacterListCard key={index} character={character.character} />
+              <CharacterListCard
+                key={index}
+                character={character.character}
+                onDelete={() => deleteCharacter(character.id)}
+              />
             ))
           ) : (
             <h2 className="font-black lg:text-3xl md:text-2xl text-xl">

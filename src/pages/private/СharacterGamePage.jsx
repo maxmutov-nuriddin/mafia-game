@@ -8,7 +8,7 @@ const CharacterGamePage = () => {
   const userId = searchParams.get("userId");
 
   const [character, setCharacter] = useState(null);
-  const oldDataRef = useRef(null); // oldData ni saqlash uchun ref
+  const oldDataRef = useRef(null);
 
   useEffect(() => {
     const fetchCharacter = async () => {
@@ -28,14 +28,14 @@ const CharacterGamePage = () => {
         }
 
         const userData = await res.json();
-        oldDataRef.current = userData; // eski datani saqlash
+        oldDataRef.current = userData;
         setCharacter(userData.character);
       } catch (err) {
         console.error("Failed to fetch character:", err);
       }
     };
 
-    fetchCharacter(); // birinchi marta yuklash
+    fetchCharacter();
     const interval = setInterval(fetchCharacter, 5000);
 
     return () => clearInterval(interval);

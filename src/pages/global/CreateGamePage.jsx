@@ -1,8 +1,9 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useState } from "react";
 
-const CreateGamePage = ({ id, startGame }) => {
+const CreateGamePage = ({ startGame }) => {
   const navigate = useNavigate();
+  const {id} = useParams(); // URL-dan ID olish
   const [isStarting, setIsStarting] = useState(false); // 🔹 yangi state
 
   const handleStart = async () => {
@@ -16,6 +17,7 @@ const CreateGamePage = ({ id, startGame }) => {
     } finally {
       setIsStarting(false); // 🔹 ishlash tugagach blokni yechamiz
     }
+    navigate(`/gamestart/${id}`); // ✅ bu path param
   };
 
   const backBtn = () => {

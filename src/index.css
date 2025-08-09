@@ -65,11 +65,19 @@ h6 {
 
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
-    -webkit-appearance: none;
+  -webkit-appearance: none;
 }
 
-#card-bg-img{
-  background-image: url('./card-bg-gamer.png');
+#card-bg-img {
+  background-image: url("./card-bg-gamer.png");
+}
+
+#card-bg-imgs {
+  background-image: url("/public/card-bg-gamer.png");
+}
+
+#card-bg-imgs,
+#card-bg-img {
   background-position: center;
   background-size: cover;
   width: 100%;

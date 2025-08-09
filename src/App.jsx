@@ -7,6 +7,7 @@ import JoinGamePage from "./pages/private/JoinGamePage";
 import CharacterGamePage from "./pages/private/СharacterGamePage";
 import { characters } from "./services/data";
 import "./App.css";
+import GameStartPage from "./pages/global/GameStartPage";
 
 function generateUnique6DigitNumber(existingIds) {
   let id;
@@ -163,7 +164,6 @@ function App() {
       for (const [index, user] of users.entries()) {
         const assignedCharacter = finalRoles[index % finalRoles.length];
 
-
         await fetch(
           `https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES/${found.id}/USERS/${user.id}`,
           {
@@ -188,11 +188,15 @@ function App() {
       <Routes>
         <Route path="/" element={<StartGamePage generateId={generateId} />} />
         <Route
-          path="/create"
+          path="/create/:id"
           element={<CreateGamePage id={id} startGame={startGame} />}
         />
         <Route path="/join" element={<JoinGamePage />} />
         <Route path="/character" element={<CharacterGamePage />} />
+        <Route
+          path="/gamestart/:id"
+          element={<GameStartPage  />}
+        />
       </Routes>
     </Router>
   );

@@ -5,7 +5,7 @@ const StartGamePage = ({ generateId }) => {
 
   const handleStart = async () => {
     const newId = await generateId();
-    createNavigate(`/create?id=${newId}`);
+    createNavigate(`/create/${newId}`);
   };
 
   const navigate = useNavigate();

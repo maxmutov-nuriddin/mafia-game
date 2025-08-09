@@ -1,15 +1,58 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import CharacterListCard from "../../components/CharactersListCard";
 
 const GameStartPage = () => {
   const navigate = useNavigate();
-  const { id } = useParams(); // URL-dan ID olish
+  const { id } = useParams();
 
   const [games, setGames] = useState([]);
+  const [timeLeft, setTimeLeft] = useState(900); // 15 minut
+  const timerRef = useRef(null);
+  const gameIdRef = useRef(null); // found.id saqlash uchun
+
+  // Xonani yopish funksiyasi
+  const closeRoom = async () => {
+    try {
+      if (!gameIdRef.current) return;
+
+      // 1️⃣ Barcha userlarni olish
+      const usersRes = await fetch(
+        `https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES/${gameIdRef.current}/USERS`
+      );
+      const users = await usersRes.json();
+
+      // 2️⃣ Har bir userni o‘chirish
+      for (let i = 0; i < users.length; i++) {
+        await fetch(
+          `https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES/${gameIdRef.current}/USERS/${users[i].id}`,
+          { method: "DELETE" }
+        );
+      }
+
+      // 3️⃣ Xonani o‘chirish
+      await fetch(
+        `https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES/${gameIdRef.current}`,
+        { method: "DELETE" }
+      );
+
+      // 4️⃣ Bosh sahifaga qaytarish
+      navigate("/");
+    } catch (error) {
+      console.error("Xona yopishda xatolik:", error);
+    }
+  };
+
+  // Vaqtni boshqarish
+  const startTimer = () => {
+    clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(closeRoom, 900000); // 15 minut
+    setTimeLeft(900);
+  };
 
   useEffect(() => {
     if (!id) return;
+
     const fetchData = async () => {
       const allRes = await fetch(
         "https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES"
@@ -17,24 +60,49 @@ const GameStartPage = () => {
       const allGames = await allRes.json();
 
       const found = allGames.find((g) => String(g.customId) === String(id));
+      if (!found) return;
 
-      let res = await fetch(
+      gameIdRef.current = found.id;
+
+      const res = await fetch(
         `https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES/${found.id}/USERS`
       );
       const data = await res.json();
       setGames(data);
+
+      startTimer();
     };
+
     fetchData();
-  }, [id]);
+
+    return () => clearTimeout(timerRef.current);
+  }, [id, navigate]);
+
+  // 🕒 Sekund sanash
+  useEffect(() => {
+    if (timeLeft <= 0) return;
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [timeLeft]);
 
   const backBtn = () => {
     navigate("/");
   };
 
-  // 🔹 O‘chirish funksiyasi
   const deleteCharacter = (userId) => {
     setGames((prev) => prev.filter((c) => c.id !== userId));
   };
+
+  const formatTime = (seconds) => {
+    const m = Math.floor(seconds / 60)
+      .toString()
+      .padStart(2, "0");
+    const s = (seconds % 60).toString().padStart(2, "0");
+    return `${m}:${s}`;
+  };
+
   return (
     <>
       <div className="flex justify-between mx-5 rounded-3xl mt-5 px-5 py-1 bg-[#DBD0C0] items-center">
@@ -54,11 +122,13 @@ const GameStartPage = () => {
         id="global-page"
       >
         <div className="bg-[#DBD0C0] w-[100%] h-130 rounded-2xl flex flex-col items-center justify-center gap-5">
-          {/* Bu joyga boshqa kontent */}
+          <h1 className="text-4xl font-bold">{formatTime(timeLeft)}</h1>
+          <button onClick={closeRoom}>Закрыть Комнату</button>
+          <button onClick={startTimer}>Продлить Комнату</button>
         </div>
 
-        <div className="bg-[#DBD0C0] w-[100%] h-130 rounded-2xl  overflow-auto grid grid-cols-3 auto-cols-fr  items-center justify-center gap-2">
-          {games ? (
+        <div className="bg-[#DBD0C0] w-[100%] h-130 rounded-2xl overflow-auto grid grid-cols-3 auto-cols-fr items-center justify-center gap-2">
+          {games && games.length > 0 ? (
             games.map((character, index) => (
               <CharacterListCard
                 key={index}

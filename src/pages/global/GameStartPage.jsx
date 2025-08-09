@@ -8,7 +8,7 @@ const GameStartPage = () => {
   const { id } = useParams();
 
   const [games, setGames] = useState([]);
-  const [timeLeft, setTimeLeft] = useState(900); // 15 minut
+  const [timeLeft, setTimeLeft] = useState(30); // 15 minut
   const timerRef = useRef(null);
   const gameIdRef = useRef(null); // found.id saqlash uchun
 
@@ -47,8 +47,8 @@ const GameStartPage = () => {
   // Vaqtni boshqarish
   const startTimer = () => {
     clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(closeRoom, 900000); // 15 minut
-    setTimeLeft(900);
+    timerRef.current = setTimeout(closeRoom, 30000); // 15 minut
+    setTimeLeft(30);
   };
 
   useEffect(() => {

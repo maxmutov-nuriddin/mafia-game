@@ -73,7 +73,7 @@ input::-webkit-inner-spin-button {
 }
 
 #card-bg-imgs {
-  background-image: url("./card-bg-gamer.png");
+  background-image: url("/public/card-bg-gamer.png");
 }
 
 #card-bg-imgs,

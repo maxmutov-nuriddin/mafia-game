@@ -104,6 +104,18 @@ const GameStartPage = () => {
     return `${m}:${s}`;
   };
 
+    useEffect(() => {
+    const handleUnload = () => {
+      closeRoom; // sahifa yopilsa darhol ishlaydi
+    };
+
+    window.addEventListener("unload", handleUnload);
+
+    return () => {
+      window.removeEventListener("unload", handleUnload);
+    };
+  }, []);
+
   return (
     <>
       <div className="flex justify-between mx-5 rounded-3xl mt-5 px-5 py-1 bg-[#DBD0C0] items-center">

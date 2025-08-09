@@ -186,7 +186,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<StartGamePage generateId={generateId} />} />
+        <Route path="/" element={<StartGamePage  generateId={generateId} />} />
         <Route
           path="/create/:id"
           element={<CreateGamePage id={id} startGame={startGame} />}

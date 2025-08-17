@@ -1,12 +1,64 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const CreateGamePage = ({ startGame }) => {
   const navigate = useNavigate();
   const { id } = useParams();
-
+  const gameIdRef = useRef(null);
   const [isStarting, setIsStarting] = useState(false);
+  const [delet, setIsDeleting] = useState(false);
   const [users, setUsers] = useState([]);
+  console.log(gameIdRef);
+
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchData = async () => {
+      const allRes = await fetch(
+        "https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES"
+      );
+      const allGames = await allRes.json();
+
+      const found = allGames.find((g) => String(g.customId) === String(id));
+      if (!found) return;
+
+      gameIdRef.current = found.id;
+    };
+
+    fetchData();
+  }, [id, navigate]);
+
+  const closeRoom = async () => {
+    setIsDeleting(true);
+    try {
+      if (!gameIdRef.current) return;
+
+      // 1️⃣ Barcha userlarni olish
+      const usersRes = await fetch(
+        `https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES/${gameIdRef.current}/USERS`
+      );
+      const users = await usersRes.json();
+
+      // 2️⃣ Har bir userni o‘chirish
+      for (let i = 0; i < users.length; i++) {
+        await fetch(
+          `https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES/${gameIdRef.current}/USERS/${users[i].id}`,
+          { method: "DELETE" }
+        );
+      }
+
+      // 3️⃣ Xonani o‘chirish
+      await fetch(
+        `https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES/${gameIdRef.current}`,
+        { method: "DELETE" }
+      );
+
+      // 4️⃣ Bosh sahifaga qaytarish
+      navigate("/");
+    } catch (error) {
+      console.error("Xona yopishda xatolik:", error);
+    }
+  };
 
   useEffect(() => {
     let interval;
@@ -47,7 +99,7 @@ const CreateGamePage = ({ startGame }) => {
   const handleStart = async () => {
     if (isStarting) return;
 
-    setIsStarting(true);
+    setIsDeleting(true);
     try {
       await startGame(id);
       navigate(`/gamestart/${id}`);
@@ -58,13 +110,19 @@ const CreateGamePage = ({ startGame }) => {
     }
   };
 
-  const backBtn = () => navigate("/");
-
   return (
     <div className="flex justify-center items-center flex-col h-[100vh] text-[#250506]">
       <div className="bg-[#DBD0C0] rounded-2xl flex flex-col items-center justify-center gap-5 relative p-6">
-        <button onClick={backBtn} className="absolute top-5 left-5">
-          back
+        <button
+          onClick={closeRoom}
+          disabled={delet}
+          className={`absolute top-5 left-5 ${
+            delet
+              ? "opacity-50 cursor-not-allowed"
+              : "text-[#250506]"
+          }`}
+        >
+          {delet ? "backing..." : "back!"}
         </button>
         <p className="absolute top-5 right-5">Gamers: {users.length}</p>
 

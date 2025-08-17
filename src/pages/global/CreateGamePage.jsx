@@ -8,7 +8,6 @@ const CreateGamePage = ({ startGame }) => {
   const [isStarting, setIsStarting] = useState(false);
   const [delet, setIsDeleting] = useState(false);
   const [users, setUsers] = useState([]);
-  console.log(gameIdRef);
 
   useEffect(() => {
     if (!id) return;

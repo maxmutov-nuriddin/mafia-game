@@ -11,9 +11,11 @@ const GameStartPage = () => {
   const [timeLeft, setTimeLeft] = useState(900); // 15 minut
   const timerRef = useRef(null);
   const gameIdRef = useRef(null); // found.id saqlash uchun
+  const [isStarting, setIsStarting] = useState(false);
 
   // Xonani yopish funksiyasi
   const closeRoom = async () => {
+    setIsStarting(true);
     try {
       if (!gameIdRef.current) return;
 
@@ -125,10 +127,15 @@ const GameStartPage = () => {
         <div className="bg-[#DBD0C0] w-[100%] h-130 rounded-2xl flex flex-col items-center justify-center gap-5">
           <h1 className="text-4xl font-black">{formatTime(timeLeft)}</h1>
           <button
-            className="border rounded-md text-xl font-bold px-3 py-2 w-60 md:w-80 hover:bg-[#250506] hover:text-[#DBD0C0]"
+            className={`border rounded-md text-xl font-bold px-3 py-2 w-60 md:w-80 hover:bg-[#250506] hover:text-[#DBD0C0] ${
+              isStarting
+                ? "opacity-50 cursor-not-allowed"
+                : "hover:bg-[#250506] hover:text-[#DBD0C0]"
+            }`}
             onClick={closeRoom}
+            disabled={isStarting}
           >
-            Закрыть Комнату
+            {isStarting ? "Комната закрывается..." : "Закрыть Комнату"}
           </button>
           <button
             className="border rounded-md text-xl font-bold px-3 py-2 w-60 md:w-80 hover:bg-[#250506] hover:text-[#DBD0C0]"

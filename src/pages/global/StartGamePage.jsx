@@ -1,9 +1,13 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const StartGamePage = ({ generateId }) => {
+  const [isStarting, setIsStarting] = useState(false);
+
   const createNavigate = useNavigate();
 
   const handleStart = async () => {
+    setIsStarting(true)
     const newId = await generateId();
     createNavigate(`/create/${newId}`);
   };
@@ -20,15 +24,19 @@ const StartGamePage = ({ generateId }) => {
       id="global-page"
     >
       <div className="bg-[#DBD0C0] w-100 h-100 rounded-2xl flex flex-col items-center justify-center gap-5 relative ">
-
         <img src="/mafia-logo.png" className="w-20 h-20" alt="" />
         <h1 className="text-5xl font-black">Начать игру</h1>
         <div className="flex flex-col gap-4 ">
           <button
             onClick={handleStart}
-            className="border rounded-md text-xl font-bold px-3 py-2 w-80 hover:bg-[#250506] hover:text-[#DBD0C0]"
+            disabled={isStarting}
+            className={`border rounded-md text-xl font-bold px-3 py-2 w-80 hover:bg-[#250506] hover:text-[#DBD0C0] ${
+              isStarting
+                ? "opacity-50 cursor-not-allowed"
+                : "hover:bg-[#250506] hover:text-[#DBD0C0]"
+            }`}
           >
-            Создать комнату!
+            {isStarting ? "Создаем комнату..." : "Создать комнату!"}
           </button>
           <button
             onClick={handleJoin}

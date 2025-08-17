@@ -117,7 +117,7 @@ const GameStartPage = () => {
           {id ? `ID: ${id}` : "Нет ID"}
         </h2>
 
-        <button onClick={backBtn}>back</button>
+        <button onClick={closeRoom}>back</button>
       </div>
 
       <div

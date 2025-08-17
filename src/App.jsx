@@ -89,7 +89,7 @@ function getMainRoleNames(count) {
 function App() {
   const [id, setId] = useState();
   const generatedIds = useRef(new Set());
-
+  
   // ===== 🔥 Функция очистки MockAPI
   const clearAllGamesAndUsers = async () => {
     try {
@@ -121,12 +121,29 @@ function App() {
       return { games: totalGames, users: totalUsers };
     } catch (error) {
       console.error("❌ Ошибка при очистке:", error);
-      return null;
+      return { games: 0, users: 0 };
     }
   };
 
   let lastUpdateId = 0;
 
+  // ✅ Функция для отправки простых сообщений
+  async function sendMessage(chatId, text) {
+    try {
+      await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: text,
+        }),
+      });
+    } catch (err) {
+      console.error("Ошибка при отправке сообщения:", err);
+    }
+  }
+
+  // 🔹 Основная логика long polling
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
@@ -138,10 +155,12 @@ function App() {
         const data = await res.json();
 
         if (data.result && data.result.length > 0) {
-          const lastUpdate = data.result[data.result.length - 1]; // ✅ берем только последний апдейт
-          lastUpdateId = lastUpdate.update_id; // ✅ сразу запоминаем его, чтобы не повторялся
+          const lastUpdate = data.result[data.result.length - 1];
+          lastUpdateId = lastUpdate.update_id;
 
           const message = lastUpdate.message;
+
+          // ✅ При получении команды /clearmvmafia
           if (
             message &&
             String(message.from.id) === MY_TELEGRAM_ID &&
@@ -149,6 +168,18 @@ function App() {
           ) {
             const stats = await clearAllGamesAndUsers();
 
+            await sendMessage(
+              MY_TELEGRAM_ID,
+              `✅ Все комнаты и игроки успешно очищены!\n\n📊 Удалено комнат: ${stats.games}\n👥 Удалено игроков: ${stats.users}`
+            );
+          }
+
+          // ✅ Если отправишь /start → появится кнопка
+          if (
+            message &&
+            String(message.from.id) === MY_TELEGRAM_ID &&
+            message.text === "/start"
+          ) {
             await fetch(
               `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,
               {
@@ -156,7 +187,11 @@ function App() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                   chat_id: MY_TELEGRAM_ID,
-                  text: `✅ Все комнаты и игроки успешно очищены!\n\n📊 Удалено комнат: ${stats.games}\n👥 Удалено игроков: ${stats.users}`,
+                  text: "Выберите действие:",
+                  reply_markup: {
+                    keyboard: [[{ text: "/clearmvmafia" }]],
+                    resize_keyboard: true,
+                  },
                 }),
               }
             );
@@ -165,7 +200,7 @@ function App() {
       } catch (err) {
         console.error("Ошибка в Telegram-поллинге:", err);
       }
-    }, 10000);
+    }, 5000); // каждые 5 сек
 
     return () => clearInterval(interval);
   }, []);

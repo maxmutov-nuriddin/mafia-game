@@ -8,6 +8,7 @@ import CharacterGamePage from "./pages/private/СharacterGamePage";
 import { characters } from "./services/data";
 import "./App.css";
 import GameStartPage from "./pages/global/GameStartPage";
+import NotFoundPage from "./pages/global/NotFoundPage";
 
 function generateUnique6DigitNumber(existingIds) {
   let id;
@@ -186,17 +187,15 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<StartGamePage  generateId={generateId} />} />
+        <Route path="/" element={<StartGamePage generateId={generateId} />} />
         <Route
           path="/create/:id"
           element={<CreateGamePage id={id} startGame={startGame} />}
         />
         <Route path="/join" element={<JoinGamePage />} />
         <Route path="/character" element={<CharacterGamePage />} />
-        <Route
-          path="/gamestart/:id"
-          element={<GameStartPage  />}
-        />
+        <Route path="/gamestart/:id" element={<GameStartPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Router>
   );

@@ -193,7 +193,7 @@ function App() {
           element={<CreateGamePage id={id} startGame={startGame} />}
         />
         <Route path="/join" element={<JoinGamePage />} />
-        <Route path="/character" element={<CharacterGamePage />} />
+        <Route path="/character" element={<CharacterGamePage  />} />
         <Route path="/gamestart/:id" element={<GameStartPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

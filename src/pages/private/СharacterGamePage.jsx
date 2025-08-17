@@ -4,11 +4,50 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 
 const CharacterGamePage = () => {
   const Navigate = useNavigate();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const [delet, setIsDeleting] = useState(false);
+  const gameIdRef = useRef(null); // found.id saqlash uchun
   const userId = searchParams.get("userId");
-
+  const gameId = searchParams.get("gameId");
   const [character, setCharacter] = useState(null);
   const oldDataRef = useRef(null);
+
+  useEffect(() => {
+    if (!gameId) return;
+
+    const fetchData = async () => {
+      const allRes = await fetch(
+        "https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES"
+      );
+      const allGames = await allRes.json();
+
+      const found = allGames.find((g) => String(g.customId) === String(gameId));
+      if (!found) return;
+
+      gameIdRef.current = found.id;
+    };
+
+    fetchData();
+  }, [gameId, navigate]);
+
+  const closeRoom = async () => {
+    setIsDeleting(true);
+    try {
+      if (!gameId) return;
+
+      // Har bir userni o‘chirish
+      await fetch(
+        `https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES/${gameIdRef.current}/USERS/${userId}`,
+        { method: "DELETE" }
+      );
+
+      // 4️⃣ Bosh sahifaga qaytarish
+      navigate("/");
+    } catch (error) {
+      console.error("Oyinchini ochirishda xatolik:", error);
+    }
+  };
 
   useEffect(() => {
     const fetchCharacter = async () => {
@@ -41,18 +80,20 @@ const CharacterGamePage = () => {
     return () => clearInterval(interval);
   }, [userId, Navigate]);
 
-  const backBtn = () => {
-    Navigate("/");
-  };
-
   return (
     <div
       className="flex justify-center items-center flex-col h-[100vh] text-[#250506]"
       id="global-page"
     >
       <div className="bg-[#DBD0C0] w-100 h-100 rounded-2xl flex flex-col items-center justify-center gap-5 relative">
-        <button onClick={backBtn} className="absolute top-5 left-5">
-          back
+        <button
+          onClick={closeRoom}
+          disabled={delet}
+          className={`absolute top-5 left-5 ${
+            delet ? "opacity-50 cursor-not-allowed" : "text-[#250506]"
+          }`}
+        >
+          {delet ? "backing..." : "back!"}
         </button>
 
         <img src="/mafia-logo.png" className="w-20 h-20" alt="" />

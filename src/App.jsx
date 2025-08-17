@@ -165,7 +165,7 @@ function App() {
       } catch (err) {
         console.error("Ошибка в Telegram-поллинге:", err);
       }
-    }, 3000);
+    }, 10000);
 
     return () => clearInterval(interval);
   }, []);

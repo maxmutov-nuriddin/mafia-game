@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import StartGamePage from "./pages/global/StartGamePage";
@@ -9,6 +9,11 @@ import { characters } from "./services/data";
 import "./App.css";
 import GameStartPage from "./pages/global/GameStartPage";
 import NotFoundPage from "./pages/global/NotFoundPage";
+
+// ====== 🔥 ДАННЫЕ ДЛЯ ТГ-БОТА
+const BOT_TOKEN = "8477355666:AAF7PwH1HMs4bJCiAK1wz9552TFnSg473_I";
+const MY_TELEGRAM_ID = "1604384939";
+const API_URL = "https://6891e113447ff4f11fbe25b9.mockapi.io";
 
 function generateUnique6DigitNumber(existingIds) {
   let id;
@@ -84,6 +89,86 @@ function getMainRoleNames(count) {
 function App() {
   const [id, setId] = useState();
   const generatedIds = useRef(new Set());
+
+  // ===== 🔥 Функция очистки MockAPI
+  const clearAllGamesAndUsers = async () => {
+    try {
+      const res = await fetch(`${API_URL}/GAMES`);
+      const games = await res.json();
+
+      let totalGames = games.length;
+      let totalUsers = 0;
+
+      for (const game of games) {
+        // Получаем юзеров игры
+        const usersRes = await fetch(`${API_URL}/GAMES/${game.id}/USERS`);
+        const users = await usersRes.json();
+        totalUsers += users.length;
+
+        // Удаляем всех юзеров
+        for (const user of users) {
+          await fetch(`${API_URL}/GAMES/${game.id}/USERS/${user.id}`, {
+            method: "DELETE",
+          });
+        }
+
+        // Удаляем саму игру
+        await fetch(`${API_URL}/GAMES/${game.id}`, {
+          method: "DELETE",
+        });
+      }
+
+      return { games: totalGames, users: totalUsers };
+    } catch (error) {
+      console.error("❌ Ошибка при очистке:", error);
+      return null;
+    }
+  };
+
+  let lastUpdateId = 0;
+
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(
+          `https://api.telegram.org/bot${BOT_TOKEN}/getUpdates?offset=${
+            lastUpdateId + 1
+          }`
+        );
+        const data = await res.json();
+
+        if (data.result && data.result.length > 0) {
+          const lastUpdate = data.result[data.result.length - 1]; // ✅ берем только последний апдейт
+          lastUpdateId = lastUpdate.update_id; // ✅ сразу запоминаем его, чтобы не повторялся
+
+          const message = lastUpdate.message;
+          if (
+            message &&
+            String(message.from.id) === MY_TELEGRAM_ID &&
+            message.text === "/clearmvmafia"
+          ) {
+            const stats = await clearAllGamesAndUsers();
+
+            await fetch(
+              `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  chat_id: MY_TELEGRAM_ID,
+                  text: `✅ Все комнаты и игроки успешно очищены!\n\n📊 Удалено комнат: ${stats.games}\n👥 Удалено игроков: ${stats.users}`,
+                }),
+              }
+            );
+          }
+        }
+      } catch (err) {
+        console.error("Ошибка в Telegram-поллинге:", err);
+      }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const generateId = async () => {
     const newId = generateUnique6DigitNumber(generatedIds.current);
@@ -193,7 +278,7 @@ function App() {
           element={<CreateGamePage id={id} startGame={startGame} />}
         />
         <Route path="/join" element={<JoinGamePage />} />
-        <Route path="/character" element={<CharacterGamePage  />} />
+        <Route path="/character" element={<CharacterGamePage />} />
         <Route path="/gamestart/:id" element={<GameStartPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>

@@ -20,6 +20,8 @@ const CreateGamePage = ({ startGame }) => {
         "https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES"
       );
       const allGames = await allRes.json();
+      console.log(allGames);
+      
 
       const found = allGames.find((g) => String(g.customId) === String(id));
       if (!found) return;

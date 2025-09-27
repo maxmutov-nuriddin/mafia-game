@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+/* eslint-disable no-unused-vars */
+import { useCallback, useEffect, useRef, useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import StartGamePage from "./pages/global/StartGamePage";
@@ -9,6 +10,7 @@ import GameStartPage from "./pages/global/GameStartPage";
 import NotFoundPage from "./pages/global/NotFoundPage";
 import { characters } from "./services/data";
 import { ToastContainer, Slide, toast } from "react-toastify";
+import { fetchWithRetry } from "./utils/fetchWithRetry";
 import "react-toastify/dist/ReactToastify.css";
 
 import "./App.css";
@@ -92,6 +94,72 @@ function getMainRoleNames(count) {
 function App() {
   const [id, setId] = useState();
   const generatedIds = useRef(new Set());
+  const [IsFullRoom, setIsFullRoom] = useState(false);
+  const [IsFullGamer, setIsFullGamer] = useState(false);
+  const isFetching = useRef(false);
+  const [analyzing, setAnalyzing] = useState(true); // boshlashda true
+  const [progress, setProgress] = useState({ rooms: 0, totalRooms: 0, users: 0 });
+
+  const seeData = useCallback(async () => {
+    if (isFetching.current) return;
+    isFetching.current = true;
+    setAnalyzing(true);
+
+    try {
+      const allHomeRes = await fetchWithRetry(`${API_URL}/GAMES`);
+      const allGames = await allHomeRes.json();
+
+      setProgress((p) => ({ ...p, totalRooms: allGames.length }));
+
+      // Parallel yuklash + progress
+      let totalUsers = 0;
+
+      for (let i = 0; i < allGames.length; i++) {
+        const game = allGames[i];
+
+        try {
+          const res = await fetchWithRetry(`${API_URL}/GAMES/${game.id}/USERS`);
+
+          if (!res.ok) {
+            console.warn(`❌ Xona ${game.id} uchun foydalanuvchilar topilmadi (status ${res.status})`);
+            continue; // bu xonani tashlab ketamiz
+          }
+
+          const users = await res.json();
+
+          // 🔹 faqat 100 dan kam bo‘lsa qo‘shamiz
+          if (users.length < 100) {
+            totalUsers += users.length;
+          }
+
+        } catch (err) {
+          console.error(`Xona ${game.id} uchun so‘rovda xatolik:`, err);
+          continue; // xato bo‘lsa ham umumiy hisob buzilmasin
+        }
+
+        // 🔹 progress yangilash
+        setProgress({
+          rooms: i + 1,
+          totalRooms: allGames.length,
+          users: totalUsers,
+        });
+      }
+
+      if (allGames.length >= 100) setIsFullRoom(true);
+      if (totalUsers >= 100) setIsFullGamer(true);
+    } catch (e) {
+      toast.error("Analizda xatolik");
+    } finally {
+      isFetching.current = false;
+      setAnalyzing(false); // ✅ faqat shu tugagach UI ochiladi
+    }
+  }, []);
+
+
+
+  useEffect(() => {
+    seeData();
+  }, []);
 
   // ===== 🔥 Функция очистки MockAPI
   const clearAllGamesAndUsers = async () => {
@@ -127,6 +195,8 @@ function App() {
       return { games: 0, users: 0 };
     }
   };
+
+
 
   let lastUpdateId = 0;
 
@@ -307,32 +377,45 @@ function App() {
   };
 
   return (
-    <Router>
-      <ToastContainer
-        position="top-center"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick={false}
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="light"
-        transition={Slide}
-      />
-      <Routes>
-        <Route path="/" element={<StartGamePage generateId={generateId} />} />
-        <Route
-          path="/create/:id"
-          element={<CreateGamePage id={id} startGame={startGame} />}
+    <>
+      {analyzing && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/70 text-white z-[9999]">
+          <div className="text-center">
+            <div className="animate-spin border-4 border-t-transparent border-white w-12 h-12 rounded-full mx-auto mb-4"></div>
+            <p>Analiz qilinmoqda...</p>
+            <p>
+              {progress.rooms}/{progress.totalRooms} xona | 👥 {progress.users} o‘yinchi
+            </p>
+          </div>
+        </div>
+      )}
+      <Router>
+        <ToastContainer
+          position="top-center"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick={false}
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+          transition={Slide}
         />
-        <Route path="/join" element={<JoinGamePage />} />
-        <Route path="/character" element={<CharacterGamePage />} />
-        <Route path="/gamestart/:id" element={<GameStartPage />} />
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
-    </Router>
+        <Routes>
+          <Route path="/" element={<StartGamePage IsFullRoom={IsFullRoom} IsFullGamer={IsFullGamer} generateId={generateId} />} />
+          <Route
+            path="/create/:id"
+            element={<CreateGamePage id={id} startGame={startGame} />}
+          />
+          <Route path="/join" element={<JoinGamePage />} />
+          <Route path="/character" element={<CharacterGamePage />} />
+          <Route path="/gamestart/:id" element={<GameStartPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </Router>
+    </>
   );
 }
 

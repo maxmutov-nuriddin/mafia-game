@@ -2,6 +2,8 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import CharacterListCard from "../../components/CharactersListCard";
+import { LoaderCircle } from 'lucide-react';
+
 
 const GameStartPage = () => {
   const navigate = useNavigate();
@@ -106,6 +108,14 @@ const GameStartPage = () => {
     return `${m}:${s}`;
   };
 
+  if (isStarting) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <LoaderCircle className="w-10 h-10 animate-spin text-[#DBD0C0]" />
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="flex justify-between mx-5 rounded-3xl mt-5 px-5 py-1 bg-[#DBD0C0] items-center">
@@ -127,11 +137,10 @@ const GameStartPage = () => {
         <div className="bg-[#DBD0C0] w-[100%] h-130 rounded-2xl flex flex-col items-center justify-center gap-5">
           <h1 className="text-4xl font-black">{formatTime(timeLeft)}</h1>
           <button
-            className={`border rounded-md text-xl font-bold px-3 py-2 w-60 md:w-80 hover:bg-[#250506] hover:text-[#DBD0C0] ${
-              isStarting
-                ? "opacity-50 cursor-not-allowed"
-                : "hover:bg-[#250506] hover:text-[#DBD0C0]"
-            }`}
+            className={`border rounded-md text-xl font-bold px-3 py-2 w-60 md:w-80 hover:bg-[#250506] hover:text-[#DBD0C0] ${isStarting
+              ? "opacity-50 cursor-not-allowed"
+              : "hover:bg-[#250506] hover:text-[#DBD0C0]"
+              }`}
             onClick={closeRoom}
             disabled={isStarting}
           >
@@ -146,7 +155,7 @@ const GameStartPage = () => {
         </div>
 
         <div className="bg-[#DBD0C0] w-[100%] h-130 rounded-2xl overflow-auto grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 auto-cols-fr items-center justify-center gap-2">
-          {games && games.length > 0 ? (
+          {Array.isArray(games) && games.length > 0 ? (
             games.map((character, index) => (
               <CharacterListCard
                 key={index}
@@ -159,6 +168,7 @@ const GameStartPage = () => {
               Нет Персонажей
             </h2>
           )}
+
         </div>
       </div>
     </>

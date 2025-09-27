@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import CharacterList from "../../components/CharactersList";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { LoaderCircle } from 'lucide-react';
+
 
 const CharacterGamePage = () => {
   const Navigate = useNavigate();
@@ -80,6 +82,14 @@ const CharacterGamePage = () => {
     return () => clearInterval(interval);
   }, [userId, Navigate]);
 
+  if (delet) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <LoaderCircle className="w-10 h-10 animate-spin text-[#DBD0C0]" />
+      </div>
+    );
+  }
+
   return (
     <div
       className="flex justify-center items-center flex-col h-[100vh] text-[#250506]"
@@ -89,9 +99,8 @@ const CharacterGamePage = () => {
         <button
           onClick={closeRoom}
           disabled={delet}
-          className={`absolute top-5 left-5 ${
-            delet ? "opacity-50 cursor-not-allowed" : "text-[#250506]"
-          }`}
+          className={`absolute top-5 left-5 ${delet ? "opacity-50 cursor-not-allowed" : "text-[#250506]"
+            }`}
         >
           {delet ? "backing..." : "back!"}
         </button>

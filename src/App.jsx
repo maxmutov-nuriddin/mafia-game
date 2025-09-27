@@ -5,10 +5,11 @@ import StartGamePage from "./pages/global/StartGamePage";
 import CreateGamePage from "./pages/global/CreateGamePage";
 import JoinGamePage from "./pages/private/JoinGamePage";
 import CharacterGamePage from "./pages/private/СharacterGamePage";
-import { characters } from "./services/data";
-import "./App.css";
 import GameStartPage from "./pages/global/GameStartPage";
 import NotFoundPage from "./pages/global/NotFoundPage";
+import { characters } from "./services/data";
+
+import "./App.css";
 
 // ====== 🔥 ДАННЫЕ ДЛЯ ТГ-БОТА
 const BOT_TOKEN = "8477355666:AAF7PwH1HMs4bJCiAK1wz9552TFnSg473_I";
@@ -89,7 +90,7 @@ function getMainRoleNames(count) {
 function App() {
   const [id, setId] = useState();
   const generatedIds = useRef(new Set());
-  
+
   // ===== 🔥 Функция очистки MockAPI
   const clearAllGamesAndUsers = async () => {
     try {
@@ -148,8 +149,7 @@ function App() {
     const interval = setInterval(async () => {
       try {
         const res = await fetch(
-          `https://api.telegram.org/bot${BOT_TOKEN}/getUpdates?offset=${
-            lastUpdateId + 1
+          `https://api.telegram.org/bot${BOT_TOKEN}/getUpdates?offset=${lastUpdateId + 1
           }`
         );
         const data = await res.json();

@@ -1,5 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
+import { LoaderCircle } from 'lucide-react';
+
 
 const CreateGamePage = ({ startGame }) => {
   const navigate = useNavigate();
@@ -98,7 +100,7 @@ const CreateGamePage = ({ startGame }) => {
   const handleStart = async () => {
     if (isStarting) return;
 
-    setIsDeleting(true);
+    setIsStarting(true);
     try {
       await startGame(id);
       navigate(`/gamestart/${id}`);
@@ -109,17 +111,24 @@ const CreateGamePage = ({ startGame }) => {
     }
   };
 
+  if (isStarting || delet) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <LoaderCircle className="w-10 h-10 animate-spin text-[#DBD0C0]" />
+      </div>
+    );
+  }
+
   return (
     <div className="flex justify-center items-center flex-col h-[100vh] text-[#250506]">
       <div className="bg-[#DBD0C0] rounded-2xl flex flex-col items-center justify-center gap-5 relative p-6">
         <button
           onClick={closeRoom}
           disabled={delet}
-          className={`absolute top-5 left-5 ${
-            delet
-              ? "opacity-50 cursor-not-allowed"
-              : "text-[#250506]"
-          }`}
+          className={`absolute top-5 left-5 ${delet
+            ? "opacity-50 cursor-not-allowed"
+            : "text-[#250506]"
+            }`}
         >
           {delet ? "backing..." : "back!"}
         </button>
@@ -133,10 +142,9 @@ const CreateGamePage = ({ startGame }) => {
             onClick={handleStart}
             disabled={isStarting}
             className={`border rounded-md text-xl font-bold px-3 py-2 w-80 
-              ${
-                isStarting
-                  ? "opacity-50 cursor-not-allowed"
-                  : "hover:bg-[#250506] hover:text-[#DBD0C0]"
+              ${isStarting
+                ? "opacity-50 cursor-not-allowed"
+                : "hover:bg-[#250506] hover:text-[#DBD0C0]"
               }`}
           >
             {isStarting ? "Игра начинается..." : "Начать игру!"}

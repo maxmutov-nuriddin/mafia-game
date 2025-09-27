@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
-import { LoaderCircle } from 'lucide-react';
+import { LoaderCircle, Undo2 } from 'lucide-react';
 import { toast } from "react-toastify";
 
 
@@ -21,7 +21,7 @@ const CreateGamePage = ({ startGame }) => {
       );
       const allGames = await allRes.json();
       console.log(allGames);
-      
+
 
       const found = allGames.find((g) => String(g.customId) === String(id));
       if (!found) return;
@@ -133,7 +133,8 @@ const CreateGamePage = ({ startGame }) => {
             : "text-[#250506]"
             }`}
         >
-          {delet ? "backing..." : "back!"}
+          {delet ? (<LoaderCircle className="w-10 h-10 animate-spin text-[#250506]" />
+          ) : (<Undo2 />)}
         </button>
         <p className="absolute top-5 right-5">Gamers: {users.length}</p>
 

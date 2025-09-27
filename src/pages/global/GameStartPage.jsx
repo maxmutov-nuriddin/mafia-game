@@ -2,7 +2,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import CharacterListCard from "../../components/CharactersListCard";
-import { LoaderCircle } from 'lucide-react';
+import { LoaderCircle, Undo2 } from 'lucide-react';
 import { toast } from "react-toastify";
 
 
@@ -129,7 +129,7 @@ const GameStartPage = () => {
           {id ? `ID: ${id}` : "Нет ID"}
         </h2>
 
-        <button onClick={closeRoom}>back</button>
+        <button onClick={closeRoom}><Undo2 /></button>
       </div>
 
       <div

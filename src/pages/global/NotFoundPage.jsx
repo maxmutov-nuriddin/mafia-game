@@ -31,7 +31,7 @@ const NotFoundPage = () => {
                    bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 
                    hover:shadow-xl hover:shadow-black/50 transition-all"
             >
-              Back
+              <Undo2 />
             </button>
           </div>
         </div>

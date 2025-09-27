@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import CharacterList from "../../components/CharactersList";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { LoaderCircle } from 'lucide-react';
+import { LoaderCircle, Undo2 } from 'lucide-react';
 import { toast } from "react-toastify";
 
 
@@ -103,7 +103,8 @@ const CharacterGamePage = () => {
           className={`absolute top-5 left-5 ${delet ? "opacity-50 cursor-not-allowed" : "text-[#250506]"
             }`}
         >
-          {delet ? "backing..." : "back!"}
+          {delet ? (<LoaderCircle className="w-10 h-10 animate-spin text-[#250506]" />
+          ) : (<Undo2 />)}
         </button>
 
         <img src="/mafia-logo.png" className="w-20 h-20" alt="" />

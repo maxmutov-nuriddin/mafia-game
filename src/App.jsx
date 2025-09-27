@@ -152,9 +152,40 @@ function App() {
     } finally {
       isFetching.current = false;
       setAnalyzing(false); // ✅ faqat shu tugagach UI ochiladi
-    }
-  }, []);
 
+      if (progress.users >= 100 || progress.rooms >= 100) {
+        try {
+          // 🔹 DB statistikani olish
+          const allGamesRes = await fetch(`${API_URL}/GAMES`);
+          const allGames = await allGamesRes.json();
+          const totalRooms = allGames.length;
+
+          let totalUsers = 0;
+          for (const game of allGames) {
+            const res = await fetch(`${API_URL}/GAMES/${game.id}/USERS`);
+            if (!res.ok) continue;
+            const users = await res.json();
+            totalUsers += users.length;
+          }
+
+          // 🔹 Admin telegramiga habar yuboramiz
+          await sendMessage(
+            MY_TELEGRAM_ID,
+            `❗ DB to‘ldi!\n\n📊 Xonalar soni: ${totalRooms}\n👥 O‘yinchilar soni: ${totalUsers}\n\n👉 Iltimos, tozalab bering.`
+          );
+
+          toast.info(
+            `Hozirda barcha joylar bandligi sababli tizimga qo‘shilish imkoni mavjud emas.Iltimos, biroz kuting va 1 daqiqadan so‘ng sahifani yangilab ko‘ring.`
+          );
+
+        } catch (err) {
+          console.error("Admin uchun statistikani yuborishda xato:", err);
+          toast.error("❌ Admin ga yuborishda xato");
+        }
+      }
+    }
+
+  }, []);
 
 
   useEffect(() => {

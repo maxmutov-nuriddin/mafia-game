@@ -56,7 +56,7 @@ const StartGamePage = ({ IsFullRoom, IsFullGamer, generateId }) => {
           </button>
         </div>
       </div>
-    </div >
+    </div>
   );
 };
 

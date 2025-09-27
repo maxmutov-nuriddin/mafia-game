@@ -8,6 +8,8 @@ import CharacterGamePage from "./pages/private/СharacterGamePage";
 import GameStartPage from "./pages/global/GameStartPage";
 import NotFoundPage from "./pages/global/NotFoundPage";
 import { characters } from "./services/data";
+import { ToastContainer, Slide, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 import "./App.css";
 
@@ -121,7 +123,7 @@ function App() {
 
       return { games: totalGames, users: totalUsers };
     } catch (error) {
-      console.error("❌ Ошибка при очистке:", error);
+      toast.error("❌ Ошибка при очистке:", error);
       return { games: 0, users: 0 };
     }
   };
@@ -140,7 +142,7 @@ function App() {
         }),
       });
     } catch (err) {
-      console.error("Ошибка при отправке сообщения:", err);
+      toast.error("Ошибка при отправке сообщения:", err);
     }
   }
 
@@ -198,7 +200,7 @@ function App() {
           }
         }
       } catch (err) {
-        console.error("Ошибка в Telegram-поллинге:", err);
+        toast.error("Ошибка в Telegram-поллинге:", err);
       }
     }, 5000); // каждые 5 сек
 
@@ -217,9 +219,9 @@ function App() {
         },
         body: JSON.stringify({ customId: newId }),
       });
-      console.log("Yaratilgan ID bazaga yuborildi:", newId);
+      toast.success("Yaratilgan ID bazaga yuborildi:", newId);
     } catch (error) {
-      console.error("Xatolik:", error);
+      toast.error("Xatolik:", error);
     }
 
     return newId;
@@ -245,7 +247,7 @@ function App() {
       // 2) Agar server-side filter natija bermasa, barcha GAMESni olib clientda filter qilamiz
       if (!games || games.length === 0) {
         if (!found) {
-          alert("Bunday roomId ega o‘yin topilmadi.");
+          toast.warn("Bunday roomId ega o‘yin topilmadi.");
           return;
         }
         games = [found];
@@ -258,7 +260,7 @@ function App() {
 
       const users = await usersRes.json();
       if (!users || users.length === 0) {
-        alert("Bu roomdagi userlar topilmadi!");
+        toast.warn("Bu roomdagi userlar topilmadi!");
         return;
       }
 
@@ -297,15 +299,28 @@ function App() {
         );
       }
 
-      alert("Barcha userlarga random character biriktirildi!");
+      toast.success("Barcha userlarga random character biriktirildi!");
     } catch (error) {
-      console.error("Xatolik:", error);
-      alert("Characterlar biriktirishda xatolik yuz berdi.");
+      toast.error("Xatolik:", error);
+      toast.error("Characterlar biriktirishda xatolik yuz berdi.");
     }
   };
 
   return (
     <Router>
+      <ToastContainer
+        position="top-center"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick={false}
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        transition={Slide}
+      />
       <Routes>
         <Route path="/" element={<StartGamePage generateId={generateId} />} />
         <Route

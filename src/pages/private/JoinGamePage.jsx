@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { LoaderCircle } from 'lucide-react';
+import { toast } from "react-toastify";
 
 const JoinGamePage = () => {
   const navigate = useNavigate();
@@ -27,7 +28,7 @@ const JoinGamePage = () => {
         (game) => String(game.customId) === String(gameId)
       );
       if (!foundGame) {
-        alert("Bunday ID ga ega o'yin topilmadi!");
+        toast.warn("Bunday ID ga ega o'yin topilmadi!");
         setIsJoining(false);
         return;
       }
@@ -41,12 +42,12 @@ const JoinGamePage = () => {
         if (usersRes.ok) {
           users = await usersRes.json();
         } else {
-          console.warn(
+          toast.warn(
             `O'yin ID ${foundGame.id} uchun USERS topilmadi, bo'sh array.`
           );
         }
       } catch (err) {
-        console.warn("Userlar ro‘yxatini olishda xatolik:", err);
+        toast.warn("Userlar ro‘yxatini olishda xatolik:", err);
       }
 
       // 4. Ism tekshiramiz (case-insensitive va trim qilingan)
@@ -56,7 +57,7 @@ const JoinGamePage = () => {
           (username || "Player").trim().toLowerCase()
       );
       if (exists) {
-        alert(
+        toast.info(
           "Bu ism bilan user allaqachon mavjud! Iltimos, boshqa ism tanlang."
         );
         setIsJoining(false);
@@ -81,11 +82,11 @@ const JoinGamePage = () => {
         const cleanGameId = String(gameId).trim(); // убедимся, что gameId корректный
         navigate(`/character?userId=${cleanUserId}&gameId=${cleanGameId}`);
       } else {
-        alert("User qo‘shishda xatolik yuz berdi!");
+        toast.error("User qo‘shishda xatolik yuz berdi!");
       }
     } catch (error) {
-      console.error("Xatolik:", error);
-      alert("O‘yinga qo‘shilish jarayonida xatolik yuz berdi!");
+      toast.error("Xatolik:", error);
+      toast.error("O‘yinga qo‘shilish jarayonida xatolik yuz berdi!");
     } finally {
       setIsJoining(false);
     }

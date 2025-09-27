@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import CharacterListCard from "../../components/CharactersListCard";
 import { LoaderCircle } from 'lucide-react';
+import { toast } from "react-toastify";
 
 
 const GameStartPage = () => {
@@ -44,7 +45,7 @@ const GameStartPage = () => {
       // 4️⃣ Bosh sahifaga qaytarish
       navigate("/");
     } catch (error) {
-      console.error("Xona yopishda xatolik:", error);
+      toast.error("Xona yopishda xatolik:", error);
     }
   };
 
@@ -53,6 +54,7 @@ const GameStartPage = () => {
     clearTimeout(timerRef.current);
     timerRef.current = setTimeout(closeRoom, 900000); // 15 minut
     setTimeLeft(900);
+    toast.success("Xonaga vaqt qo‘shildi");
   };
 
   useEffect(() => {

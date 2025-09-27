@@ -1,6 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { LoaderCircle } from 'lucide-react';
+import { toast } from "react-toastify";
 
 
 const CreateGamePage = ({ startGame }) => {
@@ -57,7 +58,7 @@ const CreateGamePage = ({ startGame }) => {
       // 4️⃣ Bosh sahifaga qaytarish
       navigate("/");
     } catch (error) {
-      console.error("Xona yopishda xatolik:", error);
+      toast.error("Xona yopishda xatolik:", error);
     }
   };
 
@@ -87,7 +88,7 @@ const CreateGamePage = ({ startGame }) => {
           setUsers(data);
         }
       } catch (err) {
-        console.error("Xatolik:", err);
+        toast.error("Xatolik:", err);
       }
     };
 
@@ -105,7 +106,7 @@ const CreateGamePage = ({ startGame }) => {
       await startGame(id);
       navigate(`/gamestart/${id}`);
     } catch (error) {
-      console.error("Xatolik:", error);
+      toast.error("Xatolik:", error);
     } finally {
       setIsStarting(false);
     }

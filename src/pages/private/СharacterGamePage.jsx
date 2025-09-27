@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import CharacterList from "../../components/CharactersList";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { LoaderCircle } from 'lucide-react';
+import { toast } from "react-toastify";
 
 
 const CharacterGamePage = () => {
@@ -47,7 +48,7 @@ const CharacterGamePage = () => {
       // 4️⃣ Bosh sahifaga qaytarish
       navigate("/");
     } catch (error) {
-      console.error("Oyinchini ochirishda xatolik:", error);
+      toast.error("Oyinchini ochirishda xatolik:", error);
     }
   };
 
@@ -61,7 +62,7 @@ const CharacterGamePage = () => {
         if (!res.ok) {
           // Agar 500 xato bo‘lsa va oldin data bo‘lsa → qaytaramiz
           if (res.status === 500 && oldDataRef.current) {
-            console.warn("Oldin data bor edi, lekin server 500 xato berdi.");
+            toast.warn("Oldin data bor edi, lekin server 500 xato berdi.");
             Navigate("/");
             return;
           }
@@ -72,7 +73,7 @@ const CharacterGamePage = () => {
         oldDataRef.current = userData;
         setCharacter(userData.character);
       } catch (err) {
-        console.error("Failed to fetch character:", err);
+        toast.error("Failed to fetch character:", err);
       }
     };
 

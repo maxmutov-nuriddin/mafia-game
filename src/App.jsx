@@ -107,85 +107,170 @@ function App() {
     isFetching.current = true;
     setAnalyzing(true);
 
+    // try {
+    //   const allHomeRes = await fetchWithRetry(`${API_URL}/GAMES`);
+    //   const allGames = await allHomeRes.json();
+
+    //   setProgress((p) => ({ ...p, totalRooms: allGames.length }));
+
+    //   // Parallel yuklash + progress
+    //   let totalUsers = 0;
+
+    //   for (let i = 0; i < allGames.length; i++) {
+    //     const game = allGames[i];
+
+    //     try {
+    //       const res = await fetchWithRetry(`${API_URL}/GAMES/${game.id}/USERS`);
+
+    //       if (!res.ok) {
+    //         console.warn(`❌ Xona ${game.id} uchun foydalanuvchilar topilmadi (status ${res.status})`);
+    //         continue; // bu xonani tashlab ketamiz
+    //       }
+
+    //       const users = await res.json();
+
+    //       // 🔹 faqat 100 dan kam bo‘lsa qo‘shamiz
+    //       if (users.length < 100) {
+    //         totalUsers += users.length;
+    //       }
+
+    //     } catch (err) {
+    //       console.error(`Xona ${game.id} uchun so‘rovda xatolik:`, err);
+    //       continue; // xato bo‘lsa ham umumiy hisob buzilmasin
+    //     }
+
+    //     // 🔹 progress yangilash
+    //     setProgress({
+    //       rooms: i + 1,
+    //       totalRooms: allGames.length,
+    //       users: totalUsers,
+    //     });
+    //   }
+
+    //   if (allGames.length >= 100) setIsFullRoom(true);
+    //   if (totalUsers >= 100) setIsFullGamer(true);
+    //   console.log(progress.rooms);
+    //   console.log(progress.users);
+    // } catch (e) {
+    //   toast.error("Analizda xatolik");
+    //   console.log(progress.rooms);
+    //   console.log(progress.users);
+    // } finally {
+    //   isFetching.current = false;
+    //   setAnalyzing(false); // ✅ faqat shu tugagach UI ochiladi
+    //   console.log(progress.rooms); 
+    //   console.log(progress.users);
+
+    //   console.log(IsFullRoom, IsFullGamer);
+    //   if (!IsFullRoom || !IsFullGamer) {
+    //     console.log(IsFullRoom, IsFullGamer);
+
+    //     // try {
+    //     // // 🔹 DB statistikani olish
+    //     // const allGamesRes = await fetch(`${API_URL}/GAMES`);
+    //     // const allGames = await allGamesRes.json();
+    //     // const totalRooms = allGames.length;
+
+    //     // let totalUsers = 0;
+    //     // for (const game of allGames) {
+    //     //   const res = await fetch(`${API_URL}/GAMES/${game.id}/USERS`);
+    //     //   if (!res.ok) continue;
+    //     //   const users = await res.json();
+    //     //   totalUsers += users.length;
+    //     // }
+
+    //     // 🔹 Admin telegramiga habar yuboramiz
+    //     console.log(progress.rooms);
+    //     console.log(progress.users);
+
+    //     await sendMessage(
+    //       MY_TELEGRAM_ID,
+    //       `❗ DB to‘ldi!\n\n📊 Xonalar soni: ${progress.rooms}\n👥 O‘yinchilar soni: ${progress.users}\n\n👉 Iltimos, tozalab bering.`
+    //     );
+
+    //     toast.info(
+    //       `Hozirda barcha joylar bandligi sababli tizimga qo‘shilish imkoni mavjud emas.Iltimos, biroz kuting va 1 daqiqadan so‘ng sahifani yangilab ko‘ring.`
+    //     );
+
+    //     // } catch (err) {
+    //     toast.info(
+    //       `Hozirda barcha joylar bandligi sababli tizimga qo‘shilish imkoni mavjud emas.Iltimos, biroz kuting va 1 daqiqadan so‘ng sahifani yangilab ko‘ring.`
+    //     );
+    //     console.error("Admin uchun statistikani yuborishda xato:", err);
+    //     toast.error("❌ Admin ga yuborishda xato");
+    //     // }
+    //   }
+    // }
+
     try {
       const allHomeRes = await fetchWithRetry(`${API_URL}/GAMES`);
       const allGames = await allHomeRes.json();
 
-      setProgress((p) => ({ ...p, totalRooms: allGames.length }));
-
-      // Parallel yuklash + progress
       let totalUsers = 0;
+      let completedRooms = 0;
 
-      for (let i = 0; i < allGames.length; i++) {
-        const game = allGames[i];
+      setProgress({ rooms: 0, totalRooms: allGames.length, users: 0 });
 
+      const usersPromises = allGames.map(async (game) => {
         try {
           const res = await fetchWithRetry(`${API_URL}/GAMES/${game.id}/USERS`);
+          const users = res.ok ? await res.json() : [];
 
-          if (!res.ok) {
-            console.warn(`❌ Xona ${game.id} uchun foydalanuvchilar topilmadi (status ${res.status})`);
-            continue; // bu xonani tashlab ketamiz
-          }
+          if (users.length < 100) totalUsers += users.length;
 
-          const users = await res.json();
+          completedRooms += 1;
 
-          // 🔹 faqat 100 dan kam bo‘lsa qo‘shamiz
-          if (users.length < 100) {
-            totalUsers += users.length;
-          }
+          // 🔹 Обновляем прогресс после каждой комнаты
+          setProgress({
+            rooms: completedRooms,
+            totalRooms: allGames.length,
+            users: totalUsers,
+          });
 
         } catch (err) {
-          console.error(`Xona ${game.id} uchun so‘rovda xatolik:`, err);
-          continue; // xato bo‘lsa ham umumiy hisob buzilmasin
+          console.error(`Xona ${game.id} xato:`, err);
+          completedRooms += 1;
+          setProgress({
+            rooms: completedRooms,
+            totalRooms: allGames.length,
+            users: totalUsers,
+          });
         }
+      });
 
-        // 🔹 progress yangilash
-        setProgress({
-          rooms: i + 1,
-          totalRooms: allGames.length,
-          users: totalUsers,
-        });
-      }
+      // 🔹 Ждем завершения всех запросов
+      await Promise.all(usersPromises);
 
-      if (allGames.length >= 100) setIsFullRoom(true);
-      if (totalUsers >= 100) setIsFullGamer(true);
-    } catch (e) {
-      toast.error("Analizda xatolik");
-    } finally {
-      isFetching.current = false;
-      setAnalyzing(false); // ✅ faqat shu tugagach UI ochiladi
+      const isFullRoom = allGames.length >= 100;
+      const isFullGamer = totalUsers >= 100;
 
-      if (progress.users >= 100 || progress.rooms >= 100) {
+      setIsFullRoom(isFullRoom);
+      setIsFullGamer(isFullGamer);
+
+      // 🔹 Telegram сообщение один раз
+      if (isFullRoom || isFullGamer) {
         try {
-          // 🔹 DB statistikani olish
-          const allGamesRes = await fetch(`${API_URL}/GAMES`);
-          const allGames = await allGamesRes.json();
-          const totalRooms = allGames.length;
-
-          let totalUsers = 0;
-          for (const game of allGames) {
-            const res = await fetch(`${API_URL}/GAMES/${game.id}/USERS`);
-            if (!res.ok) continue;
-            const users = await res.json();
-            totalUsers += users.length;
-          }
-
-          // 🔹 Admin telegramiga habar yuboramiz
           await sendMessage(
             MY_TELEGRAM_ID,
-            `❗ DB to‘ldi!\n\n📊 Xonalar soni: ${totalRooms}\n👥 O‘yinchilar soni: ${totalUsers}\n\n👉 Iltimos, tozalab bering.`
+            `❗ DB to‘ldi!\n\n📊 Xonalar soni: ${allGames.length}\n👥 O‘yinchilar soni: ${totalUsers}\n\n👉 Iltimos, tozalab bering.`
           );
-
           toast.info(
-            `Hozirda barcha joylar bandligi sababli tizimga qo‘shilish imkoni mavjud emas.Iltimos, biroz kuting va 1 daqiqadan so‘ng sahifani yangilab ko‘ring.`
+            `Hozirda barcha joylar bandligi sababli tizimga qo‘shilish imkoni mavjud emas. Iltimos, biroz kuting va 1 daqiqadan so‘ng sahifani yangilab ko‘ring.`
           );
-
         } catch (err) {
-          console.error("Admin uchun statistikani yuborishda xato:", err);
+          console.error("Admin uchun xato:", err);
           toast.error("❌ Admin ga yuborishda xato");
         }
       }
+
+    } catch (e) {
+      console.error(e);
+      toast.error("Analizda xatolik");
+    } finally {
+      isFetching.current = false;
+      setAnalyzing(false);
     }
+
 
   }, []);
 

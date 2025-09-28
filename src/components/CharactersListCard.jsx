@@ -10,7 +10,7 @@ const CharacterListCard = ({ character, onDelete  }) => {
         <img
           src={`/${character.img}`}
           alt={character.name}
-          className="w-15 h-15  object-contain mx-auto"
+          className="w-15//0 h-15  object-contain mx-auto"
         />
         <h3 className="text-2xl font-black mt-1">{character.name}</h3>
         <p className="text-md font-bold">

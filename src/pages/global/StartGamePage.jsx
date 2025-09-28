@@ -30,7 +30,7 @@ const StartGamePage = ({ IsFullRoom, IsFullGamer, generateId }) => {
 
   return (
     <div
-      className="flex justify-center items-center flex-col h-[100vh] w-80 sm:w-100 text-[#250506] px-2"
+      className="flex justify-center items-center flex-col h-[100vh] text-[#250506] px-2"
       id="global-page"
     >
       <div className="bg-[#DBD0C0] px-4 sm:px-0 w-full sm:w-100 h-100 rounded-2xl flex flex-col items-center justify-center gap-5 relative ">
@@ -55,10 +55,10 @@ const StartGamePage = ({ IsFullRoom, IsFullGamer, generateId }) => {
             Присоединиться комнату!
           </button>
         </div>
-        <h1 className="absolute text-sm font-black text-center top-1">
-          MVMAFIA — играть в онлайн Мафию бесплатно
-        </h1>
       </div>
+      <h1 className="absolute text-sm font-black text-center bottom-1 text-[#dbd0c0]">
+        MVMAFIA — играть в онлайн Мафию бесплатно
+      </h1>
     </div>
   );
 };

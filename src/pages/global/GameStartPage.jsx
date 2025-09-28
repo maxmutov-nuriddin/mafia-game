@@ -129,7 +129,7 @@ const GameStartPage = () => {
           {id ? `ID: ${id}` : "Нет ID"}
         </h2>
 
-        <button onClick={closeRoom}><Undo2 /></button>
+        <button className="text-[#250506]" onClick={closeRoom}><Undo2 /></button>
       </div>
 
       <div
@@ -159,11 +159,12 @@ const GameStartPage = () => {
         <div className="bg-[#DBD0C0] w-[100%] h-130 rounded-2xl overflow-auto grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 auto-cols-fr items-center justify-center gap-2">
           {Array.isArray(games) && games.length > 0 ? (
             games.map((character, index) => (
-              <CharacterListCard
-                key={index}
-                character={character.character}
-                onDelete={() => deleteCharacter(character.id)}
-              />
+              <div key={index} className="h-[100%]">
+                <CharacterListCard
+                  character={character.character}
+                  onDelete={() => deleteCharacter(character.id)}
+                />
+              </div>
             ))
           ) : (
             <h2 className="font-black lg:text-3xl md:text-2xl text-xl">

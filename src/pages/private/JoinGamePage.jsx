@@ -104,32 +104,32 @@ const JoinGamePage = () => {
   }
 
   return (
-    <div className="flex justify-center items-center flex-col h-[100vh] text-[#250506]">
-      <div className="bg-[#DBD0C0] w-100 h-100 rounded-2xl flex flex-col items-center justify-center gap-5 relative">
+    <div className="flex justify-center items-center flex-col h-[100vh] text-[#250506] px-2">
+      <div className="bg-[#DBD0C0] w-full sm:w-100 h-100 rounded-2xl flex flex-col items-center justify-center gap-5 px-2 relative">
         <button onClick={backBtn} className="absolute top-5 left-5">
           <Undo2 />
         </button>
         <img src="/mafia-logo.png" className="w-20 h-20" alt="" />
-        <h1 className="text-5xl font-black">Введите ID!</h1>
+        <h1 className="text-3xl sm:text-5xl font-black">Введите ID!</h1>
         <form className="flex flex-col gap-4" onSubmit={handleJoin}>
           <input
             type="number"
             placeholder="Game ID"
             value={gameId}
             onChange={(e) => setGameId(e.target.value)}
-            className="border rounded-md w-80 h-8 text-center font-black text-xl"
+            className="border rounded-md w-full sm:w-80 h-8 text-center font-black text-xl"
           />
           <input
             type="text"
             placeholder="Имя игрока"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            className="border rounded-md w-80 h-8 text-center font-black text-xl"
+            className="border rounded-md w-full sm:w-80 h-8 text-center font-black text-xl"
           />
           <button
             disabled={isJoining}
             type="submit"
-            className={`border rounded-md text-xl font-bold px-3 py-2 w-80 ${isJoining
+            className={`border rounded-md text-xl font-bold px-3 py-2 w-full sm:w-80 ${isJoining
               ? "opacity-50 cursor-not-allowed"
               : "hover:bg-[#250506] hover:text-[#DBD0C0]"
               }`}

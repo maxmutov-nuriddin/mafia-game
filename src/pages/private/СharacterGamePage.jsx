@@ -93,10 +93,10 @@ const CharacterGamePage = () => {
 
   return (
     <div
-      className="flex justify-center items-center flex-col h-[100vh] text-[#250506]"
+      className="flex justify-center items-center flex-col h-[100vh] text-[#250506] px-2"
       id="global-page"
     >
-      <div className="bg-[#DBD0C0] w-100 h-100 rounded-2xl flex flex-col items-center justify-center gap-5 relative">
+      <div className="bg-[#DBD0C0] w-full sm:w-100 h-100 rounded-2xl flex flex-col items-center justify-center gap-5 relative">
         <button
           onClick={closeRoom}
           disabled={delet}

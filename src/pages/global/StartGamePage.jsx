@@ -57,7 +57,7 @@ const StartGamePage = ({ IsFullRoom, IsFullGamer, generateId }) => {
         </div>
       </div>
       <h1 className="absolute text-sm font-black text-center bottom-1 text-[#dbd0c0]">
-        MVMAFIA — играть в онлайн Мафию бесплатно
+        MVMAFIA — играть в оффлайн Мафию бесплатно
       </h1>
     </div>
   );

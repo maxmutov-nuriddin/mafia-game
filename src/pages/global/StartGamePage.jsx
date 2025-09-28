@@ -30,7 +30,7 @@ const StartGamePage = ({ IsFullRoom, IsFullGamer, generateId }) => {
 
   return (
     <div
-      className="flex justify-center items-center flex-col h-[100vh] w-full text-[#250506] px-2"
+      className="flex flex-col justify-center items-center flex-col h-[100vh] w-full text-[#250506] px-2"
       id="global-page"
     >
       <div className="bg-[#DBD0C0] w-full max-w-md sm:w-100 h-100 rounded-2xl flex flex-col items-center justify-center gap-5 relative ">
@@ -55,45 +55,11 @@ const StartGamePage = ({ IsFullRoom, IsFullGamer, generateId }) => {
             Присоединиться комнату!
           </button>
         </div>
-
+        <h1 className="absolute text-sm font-black text-center top-1">
+          MVMAFIA — играть в онлайн Мафию бесплатно
+        </h1>
       </div>
     </div>
-
-    // <div
-    //   className="flex justify-center items-center flex-col h-[100vh] w-full text-[#250506] px-2"
-    //   id="global-page"
-    // >
-    //   <div className="bg-[#DBD0C0] w-full max-w-md h-100 rounded-2xl flex flex-col items-center justify-center gap-5 p-5 relative">
-    //     <img src="/mafia-logo.png" className="w-20 h-20 sm:w-24 sm:h-24" alt="" />
-
-    //     <h2 className="text-3xl sm:text-5xl font-black text-center">
-    //       Начать игру
-    //     </h2>
-
-    //     <div className="flex flex-col gap-3 w-full items-center">
-    //       <button
-    //         onClick={handleStart}
-    //         disabled={isStarting || IsFullRoom}
-    //         className={`border rounded-md text-lg sm:text-xl font-bold px-3 py-2 w-full sm:w-80 transition ${isStarting || IsFullRoom
-    //             ? "opacity-50 cursor-not-allowed"
-    //             : "hover:bg-[#250506] hover:text-[#DBD0C0]"
-    //           }`}
-    //       >
-    //         {isStarting ? "Создаем комнату..." : "Создать комнату!"}
-    //       </button>
-
-    //       <button
-    //         disabled={IsFullGamer}
-    //         onClick={handleJoin}
-    //         className={`border rounded-md text-lg sm:text-xl font-bold px-3 py-2 w-full sm:w-80 transition ${IsFullGamer ? "opacity-50 cursor-not-allowed" : "hover:bg-[#250506] hover:text-[#DBD0C0]"
-    //           }`}
-    //       >
-    //         Присоединиться комнату!
-    //       </button>
-    //     </div>
-    //   </div>
-    // </div>
-
   );
 };
 

@@ -30,10 +30,10 @@ const StartGamePage = ({ IsFullRoom, IsFullGamer, generateId }) => {
 
   return (
     <div
-      className="flex justify-center items-center flex-col h-[100vh] w-full text-[#250506] px-2"
+      className="flex justify-center items-center flex-col h-[100vh] w-80 sm:w-100 text-[#250506] px-2"
       id="global-page"
     >
-      <div className="bg-[#DBD0C0] px-4 sm:px-0 w-full max-w-md sm:w-100 h-100 rounded-2xl flex flex-col items-center justify-center gap-5 relative ">
+      <div className="bg-[#DBD0C0] px-4 sm:px-0 w-full sm:w-100 h-100 rounded-2xl flex flex-col items-center justify-center gap-5 relative ">
         <img src="/mafia-logo.png" className="w-20 h-20" alt="" />
         <h2 className="text-3xl sm:text-5xl font-black">Начать игру</h2>
         <div className="flex flex-col gap-4 ">

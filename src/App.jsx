@@ -14,6 +14,7 @@ import { fetchWithRetry } from "./utils/fetchWithRetry";
 import "react-toastify/dist/ReactToastify.css";
 
 import "./App.css";
+import Animated from "./pages/animated/Animated";
 
 // ====== 🔥 ДАННЫЕ ДЛЯ ТГ-БОТА
 const BOT_TOKEN = "8477355666:AAF7PwH1HMs4bJCiAK1wz9552TFnSg473_I";
@@ -92,6 +93,7 @@ function getMainRoleNames(count) {
 }
 
 function App() {
+  const [animDesign, setAnimDesign] = useState(false);
   const [id, setId] = useState();
   const generatedIds = useRef(new Set());
   const [IsFullRoom, setIsFullRoom] = useState(false);
@@ -434,17 +436,24 @@ function App() {
           theme="light"
           transition={Slide}
         />
-        <Routes>
-          <Route path="/" element={<StartGamePage IsFullRoom={IsFullRoom} IsFullGamer={IsFullGamer} generateId={generateId} />} />
-          <Route
-            path="/create/:id"
-            element={<CreateGamePage id={id} startGame={startGame} />}
-          />
-          <Route path="/join" element={<JoinGamePage />} />
-          <Route path="/character" element={<CharacterGamePage />} />
-          <Route path="/gamestart/:id" element={<GameStartPage />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
+        {
+          !animDesign ? (
+            <Animated onFinish={() => setAnimDesign(true)} />
+
+          ) : (
+            <Routes>
+              <Route path="/" element={<StartGamePage IsFullRoom={IsFullRoom} IsFullGamer={IsFullGamer} generateId={generateId} />} />
+              <Route
+                path="/create/:id"
+                element={<CreateGamePage id={id} startGame={startGame} />}
+              />
+              <Route path="/join" element={<JoinGamePage />} />
+              <Route path="/character" element={<CharacterGamePage />} />
+              <Route path="/gamestart/:id" element={<GameStartPage />} />
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          )
+        }
       </Router>
     </>
   );

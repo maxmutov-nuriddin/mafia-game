@@ -1,0 +1,69 @@
+.welcome-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+:root {
+  --primary: #ff3366;
+  --fg: #dbd0c0;
+  --bg: #250506;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--fg);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-family: sans-serif;
+}
+
+.logo {
+  overflow: visible;
+}
+
+.logo__letter {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-dasharray: 800;
+  stroke-dashoffset: 800;
+}
+
+/* Анимация рисования */
+.logo--running .logo__letter[data-anim] {
+  animation: draw 1s forwards;
+}
+
+/* Последовательная анимация букв */
+.logo--running .logo__letter[data-anim]:nth-child(1) { animation-delay: 0s; }
+.logo--running .logo__letter[data-anim]:nth-child(2) { animation-delay: 0.2s; }
+.logo--running .logo__letter[data-anim]:nth-child(3) { animation-delay: 0.4s; }
+/* Добавь для всех букв аналогично */
+
+/* Сияние после завершения рисования */
+.logo--running .logo__letter[data-anim].glow {
+  animation: glow 1.5s infinite alternate;
+  animation-delay: 1s; /* задержка = длительности draw + delay буквы */
+}
+
+@keyframes draw {
+  to {
+    stroke-dashoffset: 0;
+    fill: currentColor;
+  }
+}
+
+@keyframes glow {
+  0% {
+    filter: drop-shadow(0 0 2px var(--primary)) drop-shadow(0 0 5px var(--primary));
+  }
+  50% {
+    filter: drop-shadow(0 0 5px var(--primary)) drop-shadow(0 0 10px var(--primary));
+  }
+  100% {
+    filter: drop-shadow(0 0 2px var(--primary)) drop-shadow(0 0 5px var(--primary));
+  }
+}

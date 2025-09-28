@@ -30,7 +30,7 @@ const StartGamePage = ({ IsFullRoom, IsFullGamer, generateId }) => {
 
   return (
     <div
-      className="flex flex-col justify-center items-center flex-col h-[100vh] w-full text-[#250506] px-2"
+      className="flex justify-center items-center flex-col h-[100vh] w-full text-[#250506] px-2"
       id="global-page"
     >
       <div className="bg-[#DBD0C0] w-full max-w-md sm:w-100 h-100 rounded-2xl flex flex-col items-center justify-center gap-5 relative ">

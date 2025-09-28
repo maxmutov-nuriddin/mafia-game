@@ -31,7 +31,7 @@ export default function Animated({ onFinish }) {
         <svg
           ref={svg}
           className="logo"
-          width="70vw"
+          width="100vw"
           height="30vh"
           viewBox="0 0 1000 150"
           preserveAspectRatio="xMidYMid meet"

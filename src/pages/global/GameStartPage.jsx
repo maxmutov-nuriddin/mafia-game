@@ -164,7 +164,7 @@ const GameStartPage = () => {
         <div className="bg-[#DBD0C0] w-[100%] h-130 rounded-2xl overflow-auto grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 auto-cols-fr items-center justify-center gap-2">
           {Array.isArray(games) && games.length > 0 ? (
             games.map((character, index) => (
-              <div key={index} className="h-[100%] relative">
+              <div key={index} className="h-[100%] relative opacity-100 hover:opacity-50 transition-opacity duration-500 ease-in-out ">
                 <button className="absolute right-7 top-6" onClick={() => { seeGamerName(character.name) }}><Eye /></button>
                 <CharacterListCard
                   character={character.character}

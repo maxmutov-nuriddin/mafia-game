@@ -411,14 +411,16 @@ function App() {
 
   return (
     <>
-      {analyzing && (
+      {analyzing && animDesign && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/70 text-white z-[9999]">
           <div className="text-center">
             <div className="animate-spin border-4 border-t-transparent border-white w-12 h-12 rounded-full mx-auto mb-4"></div>
-            <p>Analiz qilinmoqda...</p>
-            <p>
-              {progress.rooms}/{progress.totalRooms} xona | 👥 {progress.users} o‘yinchi
-            </p>
+            <p className="mb-2">Analiz qilinmoqda...</p>
+            {progress && (
+              <p>
+                {progress.rooms}/{progress.totalRooms} xona | 👥 {progress.users} o‘yinchi
+              </p>
+            )}
           </div>
         </div>
       )}

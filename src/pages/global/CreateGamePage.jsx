@@ -20,8 +20,6 @@ const CreateGamePage = ({ startGame }) => {
         "https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES"
       );
       const allGames = await allRes.json();
-      console.log(allGames);
-
 
       const found = allGames.find((g) => String(g.customId) === String(id));
       if (!found) return;
@@ -145,7 +143,7 @@ const CreateGamePage = ({ startGame }) => {
           <button
             onClick={handleStart}
             disabled={isStarting}
-            className={`border rounded-md text-xl font-bold px-3 py-2  sm:w-80 
+            className={`border rounded-md text-xl font-bold px-3 py-2 sm:w-[100%] 
               ${isStarting
                 ? "opacity-50 cursor-not-allowed"
                 : "hover:bg-[#250506] hover:text-[#DBD0C0]"

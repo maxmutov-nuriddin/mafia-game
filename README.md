@@ -1,29 +1,54 @@
 # Mafia Game
 
-Interactive browser-based implementation of the classic **Mafia** party game built with **React**.
+Interactive browser-based implementation of the classic Mafia party game built with React.
 
-## 🧩 Description
-Mafia Game is a frontend application that simulates the core mechanics of the Mafia social deduction game.
-The project focuses on game logic, player interaction, and UI state management in a single-page application.
+## Features
 
-This project was built as a practical exercise to strengthen skills in React, component architecture, and state handling.
+- Automated role assignment (Mafia, Detective, Doctor, Civilian)
+- Day/night game cycle with phase transitions
+- Multi-player support
+- Real-time game state management
+- Responsive UI
 
-## 🚀 Features
-- Player role assignment
-- Game phase logic (day / night)
-- Interactive UI
-- Dynamic game state updates
+## Tech Stack
 
-## 🛠 Tech Stack
 - React
 - JavaScript (ES6+)
-- HTML5
-- CSS3
-- Vite
+- HTML5/CSS3
 
-## 📦 Installation & Run
+## Installation
+
 ```bash
 git clone https://github.com/maxmutov-nuriddin/mafia-game.git
 cd mafia-game
 npm install
 npm run dev
+```
+
+Open `http://localhost:5173` in your browser.
+
+## Build for Production
+
+```bash
+npm run build
+```
+
+## Project Structure
+
+```
+mafia-game/
+├── src/
+│   ├── components/    # React components
+│   ├── hooks/         # Custom hooks
+│   └── utils/         # Helper functions
+├── public/            # Static assets
+└── vite.config.js     # Vite configuration
+```
+
+## License
+
+MIT
+
+## Author
+
+Nuriddin Maxmutov  

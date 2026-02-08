@@ -10,16 +10,24 @@ import GameStartPage from "./pages/global/GameStartPage";
 import NotFoundPage from "./pages/global/NotFoundPage";
 import { characters } from "./services/data";
 import { ToastContainer, Slide, toast } from "react-toastify";
-import { fetchWithRetry } from "./utils/fetchWithRetry";
 import "react-toastify/dist/ReactToastify.css";
 
 import "./App.css";
 import Animated from "./pages/animated/Animated";
 
+// ====== 🔥 Firebase Service Import
+import {
+  getRoomStats,
+  deleteAllRoomsAndPlayers,
+  createRoom,
+  getRoomByCustomId,
+  getPlayersInRoom,
+  assignCharactersToPlayers
+} from "./services/gameService";
+
 // ====== 🔥 ДАННЫЕ ДЛЯ ТГ-БОТА
-const BOT_TOKEN = "8477355666:AAF7PwH1HMs4bJCiAK1wz9552TFnSg473_I";
+const BOT_TOKEN = "8359878262:AAGv3-QIHp7qdt821Y4Jy1wpR6VyXZuibNU";
 const MY_TELEGRAM_ID = "1604384939";
-const API_URL = "https://6891e113447ff4f11fbe25b9.mockapi.io";
 
 function generateUnique6DigitNumber(existingIds) {
   let id;
@@ -99,55 +107,21 @@ function App() {
   const [IsFullRoom, setIsFullRoom] = useState(false);
   const [IsFullGamer, setIsFullGamer] = useState(false);
   const isFetching = useRef(false);
-  const [analyzing, setAnalyzing] = useState(true); // boshlashda true
-  const [progress, setProgress] = useState({ rooms: 0, totalRooms: 0, users: 0 });
 
   const seeData = useCallback(async () => {
     if (isFetching.current) return;
     isFetching.current = true;
-    setAnalyzing(true);
 
     try {
-      const allHomeRes = await fetchWithRetry(`${API_URL}/GAMES`);
-      const allGames = await allHomeRes.json();
+      console.log("🔍 Starting Firebase stats fetch...");
 
-      let totalUsers = 0;
-      let completedRooms = 0;
+      // Get room statistics from Firebase
+      const { totalRooms, totalPlayers } = await getRoomStats();
 
-      setProgress({ rooms: 0, totalRooms: allGames.length, users: 0 });
+      console.log("✅ Firebase stats received:", { totalRooms, totalPlayers });
 
-      const usersPromises = allGames.map(async (game) => {
-        try {
-          const res = await fetchWithRetry(`${API_URL}/GAMES/${game.id}/USERS`);
-          const users = res.ok ? await res.json() : [];
-
-          if (users.length < 100) totalUsers += users.length;
-
-          completedRooms += 1;
-
-          // 🔹 Обновляем прогресс после каждой комнаты
-          setProgress({
-            rooms: completedRooms,
-            totalRooms: allGames.length,
-            users: totalUsers,
-          });
-
-        } catch (err) {
-          console.error(`Xona ${game.id} xato:`, err);
-          completedRooms += 1;
-          setProgress({
-            rooms: completedRooms,
-            totalRooms: allGames.length,
-            users: totalUsers,
-          });
-        }
-      });
-
-      // 🔹 Ждем завершения всех запросов
-      await Promise.all(usersPromises);
-
-      const isFullRoom = allGames.length >= 100;
-      const isFullGamer = totalUsers >= 100;
+      const isFullRoom = totalRooms >= 100;
+      const isFullGamer = totalPlayers >= 100;
 
       setIsFullRoom(isFullRoom);
       setIsFullGamer(isFullGamer);
@@ -157,10 +131,10 @@ function App() {
         try {
           await sendMessage(
             MY_TELEGRAM_ID,
-            `❗ DB to‘ldi!\n\n📊 Xonalar soni: ${allGames.length}\n👥 O‘yinchilar soni: ${totalUsers}\n\n👉 Iltimos, tozalab bering.`
+            `❗ DB to'ldi!\n\n📊 Xonalar soni: ${totalRooms}\n👥 O'yinchilar soni: ${totalPlayers}\n\n👉 Iltimos, tozalab bering.`
           );
           toast.info(
-            `Hozirda barcha joylar bandligi sababli tizimga qo‘shilish imkoni mavjud emas. Iltimos, biroz kuting va 1 daqiqadan so‘ng sahifani yangilab ko‘ring.`
+            `Hozirda barcha joylar bandligi sababli tizimga qo'shilish imkoni mavjud emas. Iltimos, biroz kuting va 1 daqiqadan so'ng sahifani yangilab ko'ring.`
           );
         } catch (err) {
           console.error("Admin uchun xato:", err);
@@ -169,11 +143,11 @@ function App() {
       }
 
     } catch (e) {
-      console.error(e);
-      toast.error("Analizda xatolik");
+      console.error("❌ Analizda xatolik:", e);
+      toast.error("Analizda xatolik: " + e.message);
     } finally {
+      console.log("✅ Analysis complete");
       isFetching.current = false;
-      setAnalyzing(false);
     }
 
 
@@ -181,38 +155,17 @@ function App() {
 
 
   useEffect(() => {
-    seeData();
-  }, []);
+    // Only run analysis after animation is complete
+    if (animDesign) {
+      seeData();
+    }
+  }, [animDesign, seeData]);
 
-  // ===== 🔥 Функция очистки MockAPI
+  // ===== 🔥 Функция очистки Firebase
   const clearAllGamesAndUsers = async () => {
     try {
-      const res = await fetch(`${API_URL}/GAMES`);
-      const games = await res.json();
-
-      let totalGames = games.length;
-      let totalUsers = 0;
-
-      for (const game of games) {
-        // Получаем юзеров игры
-        const usersRes = await fetch(`${API_URL}/GAMES/${game.id}/USERS`);
-        const users = await usersRes.json();
-        totalUsers += users.length;
-
-        // Удаляем всех юзеров
-        for (const user of users) {
-          await fetch(`${API_URL}/GAMES/${game.id}/USERS/${user.id}`, {
-            method: "DELETE",
-          });
-        }
-
-        // Удаляем саму игру
-        await fetch(`${API_URL}/GAMES/${game.id}`, {
-          method: "DELETE",
-        });
-      }
-
-      return { games: totalGames, users: totalUsers };
+      const stats = await deleteAllRoomsAndPlayers();
+      return { games: stats.rooms, users: stats.players };
     } catch (error) {
       toast.error("❌ Ошибка при очистке:", error);
       return { games: 0, users: 0 };
@@ -302,19 +255,17 @@ function App() {
 
   const generateId = async () => {
     const newId = generateUnique6DigitNumber(generatedIds.current);
+    console.log("🎲 Generated new room ID:", newId);
     setId(newId);
 
     try {
-      await fetch("https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ customId: newId }),
-      });
-      toast.success("Yaratilgan ID bazaga yuborildi:", newId);
+      console.log("📤 Creating room in Firebase...");
+      await createRoom(newId);
+      console.log("✅ Room created successfully in Firebase");
+      toast.success(`Комната создана! ID: ${newId}`);
     } catch (error) {
-      toast.error("Xatolik:", error);
+      console.error("❌ Error creating room:", error);
+      toast.error("Ошибка создания комнаты: " + error.message);
     }
 
     return newId;
@@ -322,76 +273,59 @@ function App() {
 
   const startGame = async (roomId) => {
     try {
-      // 1) Avvalo server-side filter bilan sinab ko'ramiz (agar ishlasa tezroq)
+      console.log("🎮 Starting game for room:", roomId);
 
-      const allRes = await fetch(
-        "https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES"
-      );
-      const allGames = await allRes.json();
+      // 1) Find room by customId
+      const room = await getRoomByCustomId(roomId);
 
-      // roomId turlari farq qilishi mumkin — string/number, shuning uchun String() bilan solishtiramiz
-      const found = allGames.find((g) => String(g.customId) === String(roomId));
-
-      let res = await fetch(
-        `https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES?id=${found.id}`
-      );
-      let games = await res.json();
-
-      // 2) Agar server-side filter natija bermasa, barcha GAMESni olib clientda filter qilamiz
-      if (!games || games.length === 0) {
-        if (!found) {
-          toast.warn("Bunday roomId ega o‘yin topilmadi.");
-          return;
-        }
-        games = [found];
+      if (!room) {
+        toast.warn("Bunday roomId ega o'yin topilmadi.");
+        return;
       }
 
-      // 4) Shu gameId ga tegishli userlarni olib kelamiz
-      const usersRes = await fetch(
-        `https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES/${found.id}/USERS`
-      );
+      console.log("✅ Room found:", room);
 
-      const users = await usersRes.json();
-      if (!users || users.length === 0) {
+      // 2) Get all players in the room
+      const players = await getPlayersInRoom(room.id);
+
+      if (!players || players.length === 0) {
         toast.warn("Bu roomdagi userlar topilmadi!");
         return;
       }
 
-      // 5) (Misol uchun) random character taqsimlash va PUT qilish
+      console.log("👥 Players in room:", players);
 
+      // 3) Random character assignment logic (same as before)
       const shuffled = [...characters].sort(() => 0.5 - Math.random());
 
-      const mainRoleNames = getMainRoleNames(users.length);
+      const mainRoleNames = getMainRoleNames(players.length);
 
       // Asosiy rollar obyektini topamiz
       let mainRoles = mainRoleNames.map((roleName) =>
         shuffled.find((c) => c.name === roleName)
       );
 
-      // Qolganini Мирный житель bilan to‘ldiramiz
+      // Qolganini Мирный житель bilan to'ldiramiz
       const citizenRole = shuffled.find((c) => c.name === "Мирный житель");
-      while (mainRoles.length < users.length) {
+      while (mainRoles.length < players.length) {
         mainRoles.push({ ...citizenRole });
       }
 
       // Aralashtiramiz
       const finalRoles = [...mainRoles].sort(() => 0.5 - Math.random());
 
-      for (const [index, user] of users.entries()) {
-        const assignedCharacter = finalRoles[index % finalRoles.length];
+      // 4) Prepare assignments
+      const assignments = players.map((player, index) => ({
+        playerId: player.id,
+        character: finalRoles[index % finalRoles.length]
+      }));
 
-        await fetch(
-          `https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES/${found.id}/USERS/${user.id}`,
-          {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              character: assignedCharacter,
-            }),
-          }
-        );
-      }
+      console.log("🎭 Character assignments:", assignments);
 
+      // 5) Assign characters to all players
+      await assignCharactersToPlayers(room.id, assignments);
+
+      console.log("✅ Characters assigned successfully!");
       toast.success("Barcha userlarga random character biriktirildi!");
     } catch (error) {
       toast.error("Xatolik:", error);
@@ -401,19 +335,6 @@ function App() {
 
   return (
     <>
-      {analyzing && animDesign && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/70 text-white z-[9999]">
-          <div className="text-center">
-            <div className="animate-spin border-4 border-t-transparent border-white w-12 h-12 rounded-full mx-auto mb-4"></div>
-            <p className="mb-2">Analiz qilinmoqda...</p>
-            {progress && (
-              <p>
-                {progress.rooms}/{progress.totalRooms} xona | 👥 {progress.users} o‘yinchi
-              </p>
-            )}
-          </div>
-        </div>
-      )}
       <Router>
         <ToastContainer
           position="top-center"

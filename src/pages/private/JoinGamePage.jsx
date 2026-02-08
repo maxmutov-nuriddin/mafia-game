@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { LoaderCircle, Undo2 } from 'lucide-react';
 import { toast } from "react-toastify";
+import { getRoomByCustomId, getPlayersInRoom, addPlayerToRoom } from "../../services/gameService";
 
 const JoinGamePage = () => {
   const navigate = useNavigate();
@@ -16,46 +17,25 @@ const JoinGamePage = () => {
     setIsJoining(true);
 
     try {
-      // 1. GAMES ro‘yxatini olamiz
-      const res = await fetch(
-        "https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES"
-      );
-      if (!res.ok) throw new Error("O‘yinlar ro‘yxatini olishda xatolik!");
-      const games = await res.json();
+      // 1. Find room by customId
+      const room = await getRoomByCustomId(gameId);
 
-      // 2. customId bo‘yicha o‘yinni topamiz (string orqali aniq tekshiradi)
-      const foundGame = games.find(
-        (game) => String(game.customId) === String(gameId)
-      );
-      if (!foundGame) {
+      if (!room) {
         toast.warn("Bunday ID ga ega o'yin topilmadi!");
         setIsJoining(false);
         return;
       }
 
-      // 3. Shu o‘yindagi userlar ro‘yxatini olamiz (agar bo‘lmasa, bo‘sh array)
-      let users = [];
-      try {
-        const usersRes = await fetch(
-          `https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES/${foundGame.id}/USERS`
-        );
-        if (usersRes.ok) {
-          users = await usersRes.json();
-        } else {
-          toast.warn(
-            `O'yin ID ${foundGame.id} uchun USERS topilmadi, bo'sh array.`
-          );
-        }
-      } catch (err) {
-        toast.warn("Userlar ro‘yxatini olishda xatolik:", err);
-      }
+      // 2. Get all players in the room
+      const players = await getPlayersInRoom(room.id);
 
-      // 4. Ism tekshiramiz (case-insensitive va trim qilingan)
-      const exists = users.some(
-        (u) =>
-          u.name.trim().toLowerCase() ===
+      // 3. Check for duplicate name (case-insensitive)
+      const exists = players.some(
+        (p) =>
+          p.name.trim().toLowerCase() ===
           (username || "Player").trim().toLowerCase()
       );
+
       if (exists) {
         toast.info(
           "Bu ism bilan user allaqachon mavjud! Iltimos, boshqa ism tanlang."
@@ -64,29 +44,17 @@ const JoinGamePage = () => {
         return;
       }
 
-      // 5. User qo‘shamiz faqat shu o‘yinga
-      const userRes = await fetch(
-        `https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES/${foundGame.id}/USERS`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: username || "Player",
-          }),
-        }
-      );
+      // 4. Add player to room
+      const playerId = await addPlayerToRoom(room.id, username || "Player");
 
-      if (userRes.ok) {
-        const newUser = await userRes.json();
-        const cleanUserId = String(newUser.id).trim();
-        const cleanGameId = String(gameId).trim(); // убедимся, что gameId корректный
-        navigate(`/character?userId=${cleanUserId}&gameId=${cleanGameId}`);
-      } else {
-        toast.error("User qo‘shishda xatolik yuz berdi!");
-      }
+      // 5. Navigate to character page
+      const cleanUserId = String(playerId).trim();
+      const cleanGameId = String(gameId).trim();
+      navigate(`/character?userId=${cleanUserId}&gameId=${cleanGameId}`);
+
     } catch (error) {
       toast.error("Xatolik:", error);
-      toast.error("O‘yinga qo‘shilish jarayonida xatolik yuz berdi!");
+      toast.error("O'yinga qo'shilish jarayonida xatolik yuz berdi!");
     } finally {
       setIsJoining(false);
     }

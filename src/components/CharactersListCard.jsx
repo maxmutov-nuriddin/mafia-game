@@ -1,19 +1,32 @@
-const CharacterListCard = ({ character, onDelete  }) => {
+const CharacterListCard = ({ character, onDelete }) => {
+  // Handle case when character is not yet assigned
+  if (!character) {
+    return (
+      <div className="grid grid-cols-1 w-full h-full gap-4 p-5">
+        <div className="p-4 border rounded shadow text-center flex flex-col gap-2" id="card-bg-imgs">
+          <h3 className="text-2xl font-black mt-1">Ожидание...</h3>
+          <p className="text-md font-bold">
+            <i>Персонаж ещё не назначен</i>
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div onClick={onDelete} className="grid grid-cols-1 w-full h-full gap-4 p-5">
       <div
         key={character.id}
-        className="p-4 border rounded shadow text-center flex flex-col  gap-2"
+        className="p-4 border rounded shadow text-center flex flex-col gap-2 h-full"
         id="card-bg-imgs"
       >
         <img
           src={`/${character.img}`}
           alt={character.name}
-          className="w-15//0 h-15  object-contain mx-auto"
+          className="w-15 h-15 object-contain mx-auto"
         />
         <h3 className="text-2xl font-black mt-1">{character.name}</h3>
-        <p className="text-md font-bold">
+        <p className="text-md font-bold flex-grow flex items-center justify-center">
           <i>{character.description}</i>
         </p>
       </div>

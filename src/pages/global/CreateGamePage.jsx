@@ -2,6 +2,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { LoaderCircle, Undo2 } from 'lucide-react';
 import { toast } from "react-toastify";
+import { getRoomByCustomId, listenToRoomPlayers, deleteRoom } from "../../services/gameService";
 
 
 const CreateGamePage = ({ startGame }) => {
@@ -16,18 +17,52 @@ const CreateGamePage = ({ startGame }) => {
     if (!id) return;
 
     const fetchData = async () => {
-      const allRes = await fetch(
-        "https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES"
-      );
-      const allGames = await allRes.json();
+      console.log("🔍 CreateGamePage: Fetching room with customId:", id);
 
-      const found = allGames.find((g) => String(g.customId) === String(id));
-      if (!found) return;
+      // Retry logic - sometimes Firebase needs a moment to sync
+      let room = null;
+      let attempts = 0;
+      const maxAttempts = 5;
 
-      gameIdRef.current = found.id;
+      while (!room && attempts < maxAttempts) {
+        room = await getRoomByCustomId(id);
+
+        if (!room) {
+          attempts++;
+          console.log(`⏳ Attempt ${attempts}/${maxAttempts}: Room not found yet, retrying in 500ms...`);
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      }
+
+      if (!room) {
+        console.error("❌ Room not found after", maxAttempts, "attempts");
+        toast.error("Комната не найдена. Попробуйте снова.");
+        navigate("/");
+        return;
+      }
+
+      console.log("✅ Room found:", room);
+      gameIdRef.current = room.id;
+
+      // Set up real-time listener for players
+      console.log("👂 Setting up Firebase listener for room:", room.id);
+      const unsubscribe = listenToRoomPlayers(room.id, (players) => {
+        console.log("📥 Players updated:", players);
+        setUsers(players);
+        // Note: Don't auto-delete here - this is the waiting room before game starts
+      });
+
+      // Return cleanup function
+      return unsubscribe;
     };
 
-    fetchData();
+    const cleanup = fetchData();
+
+    return () => {
+      if (cleanup && typeof cleanup.then === 'function') {
+        cleanup.then(unsub => unsub && unsub());
+      }
+    };
   }, [id, navigate]);
 
   const closeRoom = async () => {
@@ -35,68 +70,15 @@ const CreateGamePage = ({ startGame }) => {
     try {
       if (!gameIdRef.current) return;
 
-      // 1️⃣ Barcha userlarni olish
-      const usersRes = await fetch(
-        `https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES/${gameIdRef.current}/USERS`
-      );
-      const users = await usersRes.json();
+      // Delete room (this will cascade delete all players in Firebase)
+      await deleteRoom(gameIdRef.current);
 
-      // 2️⃣ Har bir userni o‘chirish
-      for (let i = 0; i < users.length; i++) {
-        await fetch(
-          `https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES/${gameIdRef.current}/USERS/${users[i].id}`,
-          { method: "DELETE" }
-        );
-      }
-
-      // 3️⃣ Xonani o‘chirish
-      await fetch(
-        `https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES/${gameIdRef.current}`,
-        { method: "DELETE" }
-      );
-
-      // 4️⃣ Bosh sahifaga qaytarish
+      // Navigate to home
       navigate("/");
     } catch (error) {
       toast.error("Xona yopishda xatolik:", error);
     }
   };
-
-  useEffect(() => {
-    let interval;
-
-    const fetchUsers = async () => {
-      try {
-        // Avval hamma o'yinlarni olish
-        const allRes = await fetch(
-          "https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES"
-        );
-        const allGames = await allRes.json();
-
-        if (!Array.isArray(allGames) || allGames.length === 0) return;
-
-        // Shu URL'dagi id ga mos xona topish (customId bo‘yicha)
-        const found = allGames.find((g) => String(g.customId) === String(id));
-        if (!found) return;
-
-        // Xona ichidagi userlarni olish
-        const res = await fetch(
-          `https://6891e113447ff4f11fbe25b9.mockapi.io/GAMES/${found.id}/USERS`
-        );
-        if (res.ok) {
-          const data = await res.json();
-          setUsers(data);
-        }
-      } catch (err) {
-        toast.error("Xatolik:", err);
-      }
-    };
-
-    fetchUsers();
-    interval = setInterval(fetchUsers, 3500);
-
-    return () => clearInterval(interval);
-  }, [id]);
 
   const handleStart = async () => {
     if (isStarting) return;

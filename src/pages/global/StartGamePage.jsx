@@ -9,9 +9,17 @@ const StartGamePage = ({ IsFullRoom, IsFullGamer, generateId }) => {
   const createNavigate = useNavigate();
 
   const handleStart = async () => {
-    setIsStarting(true)
-    const newId = await generateId();
-    createNavigate(`/create/${newId}`);
+    setIsStarting(true);
+    try {
+      console.log("🎬 StartGamePage: Creating room...");
+      const newId = await generateId();
+      console.log("🎬 StartGamePage: Navigating to /create/" + newId);
+      createNavigate(`/create/${newId}`);
+    } catch (error) {
+      console.error("❌ Error in handleStart:", error);
+      toast.error("Ошибка создания комнаты: " + error.message);
+      setIsStarting(false);
+    }
   };
 
   const navigate = useNavigate();

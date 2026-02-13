@@ -101,7 +101,7 @@ const CharacterGamePage = () => {
 
   return (
     <div className="mafia-page flex justify-center items-start sm:items-center flex-col px-2 py-3" id="global-page">
-      <div className="mafia-shell relative w-full max-w-[350px] min-h-[400px] flex flex-col gap-4 p-4 sm:p-5">
+      <div className="mafia-shell relative w-full max-w-[300px] min-h-[400px] flex flex-col gap-4 p-4 sm:p-5">
         <div className="w-full flex items-center justify-between">
           <img src="/mafia-logo.png" className="w-18 h-18 object-contain" alt="Mafia" />
 
@@ -134,7 +134,7 @@ const CharacterGamePage = () => {
         {showRoleDescription && canShowRoleDescription && (
           <div className="absolute top-[94px] right-4 sm:right-6 z-30 w-[320px] max-w-[calc(100%-2rem)] mafia-panel-strong p-4 shadow-[0_14px_28px_rgba(37,5,6,0.2)]">
             <p className="text-sm font-bold uppercase tracking-wide opacity-70 mb-2">Профессия</p>
-            <p className="text-base font-semibold leading-relaxed">{roleDescription}</p>
+            <p className="text-base text-sm font-semibold leading-relaxed">{roleDescription}</p>
           </div>
         )}
 

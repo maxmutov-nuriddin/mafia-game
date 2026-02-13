@@ -3,7 +3,7 @@ const CharacterListCard = ({ character, onDelete }) => {
     return (
       <div className="w-full h-full p-2" onClick={onDelete}>
         <div
-          className="w-full h-full p-4 border rounded shadow text-center flex flex-col gap-3"
+          className="mafia-panel w-full h-full p-4 text-center flex flex-col gap-3"
           id="card-bg-imgs"
         >
           <h3 className="text-2xl font-black mt-1">Ожидание...</h3>
@@ -19,7 +19,7 @@ const CharacterListCard = ({ character, onDelete }) => {
     <div onClick={onDelete} className="w-full h-full p-2">
       <div
         key={character.id}
-        className="w-full h-full p-4 border rounded shadow text-center flex flex-col gap-3"
+        className="mafia-panel w-full h-full p-4 text-center flex flex-col gap-3"
         id="card-bg-imgs"
       >
         <img

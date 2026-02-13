@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { Undo2 } from "lucide-react";
 
 const NotFoundPage = () => {
   const navigate = useNavigate();
@@ -8,7 +9,7 @@ const NotFoundPage = () => {
   return (
     <div className="flex justify-center items-center flex-col h-[100vh] ">
       <StyledWrapper>
-        <div className="tooltip-container bg-[#DBD0C0] rounded-4xl">
+        <div className="tooltip-container mafia-shell rounded-4xl">
           <div className="icon">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -23,13 +24,11 @@ const NotFoundPage = () => {
               10zm-1-16h2v6h-2zm0 8h2v2h-2z" />
             </svg>
           </div>
-          <div className="tooltip bg-[#DBD0C0]">
+          <div className="tooltip mafia-shell">
             <p className="text-[#250506] text-xl">Страница не найдена</p>
             <button
               onClick={() => navigate("/")}
-              className="mt-8 px-6 py-1 rounded-lg font-bold text-white text-lg shadow-md shadow-black/30 
-                   bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 
-                   hover:shadow-xl hover:shadow-black/50 transition-all"
+              className="mafia-btn mafia-btn--icon mt-8 mx-auto"
             >
               <Undo2 />
             </button>
@@ -64,7 +63,7 @@ const StyledWrapper = styled.div`
   .tooltip {
     visibility: hidden;
     width: 200px;
-    background-color: #DBD0C0;
+    background-color: var(--mafia-paper);
     color: #fff;
     text-align: center;
     border-radius: 5px;
@@ -85,7 +84,7 @@ const StyledWrapper = styled.div`
     margin-left: -5px;
     border-width: 5px;
     border-style: solid;
-    border-color: #fffafa transparent transparent transparent;
+    border-color: var(--mafia-paper) transparent transparent transparent;
   }
   .tooltip-container:hover .tooltip {
     visibility: visible;

@@ -115,14 +115,12 @@ const CreateGamePage = ({ startGame }) => {
   }
 
   return (
-    <div className="flex justify-center items-center flex-col h-[100vh] text-[#250506] px-2">
-      <div className="bg-[#DBD0C0] w-full sm:w-100 rounded-2xl flex flex-col items-center justify-center gap-5 relative p-6">
+    <div className="mafia-page flex justify-center items-center flex-col px-2">
+      <div className="mafia-shell w-full sm:w-100 flex flex-col items-center justify-center gap-5 relative p-6">
         <button
           onClick={closeRoom}
           disabled={delet}
-          className={`absolute top-5 left-5 ${
-            delet ? "opacity-50 cursor-not-allowed" : "text-[#250506]"
-          }`}
+          className="mafia-btn mafia-btn--icon absolute top-5 left-5"
         >
           {delet ? (
             <LoaderCircle className="w-10 h-10 animate-spin text-[#250506]" />
@@ -134,20 +132,20 @@ const CreateGamePage = ({ startGame }) => {
         <button
           type="button"
           onClick={() => setShowPlayers((prev) => !prev)}
-          className="absolute top-5 right-5 border-2 border-[#250506] rounded-full px-3 py-1.5 font-semibold flex items-center gap-2 bg-[#f4ede1] hover:bg-[#250506] hover:text-[#DBD0C0] transition-colors"
+          className="mafia-btn mafia-btn--icon absolute top-5 right-5"
         >
           <Users size={16} />
           Gamers: {users.length}
         </button>
 
         {showPlayers && (
-          <div className="absolute right-4 top-16 z-20 w-[300px] rounded-2xl border-2 border-[#250506]/20 bg-[#f6eee2] overflow-hidden shadow-[0_12px_24px_rgba(37,5,6,0.18)]">
+          <div className="mafia-panel-strong absolute right-4 top-16 z-20 w-[300px] overflow-hidden shadow-[0_12px_24px_rgba(37,5,6,0.18)]">
             <div className="flex items-center justify-between px-4 py-3 bg-[#ede1cf] border-b border-[#250506]/15">
               <p className="font-black text-lg">Игроки ({users.length})</p>
               <button
                 type="button"
                 onClick={() => setShowPlayers(false)}
-                className="border border-[#250506]/40 rounded-lg px-2 py-1 text-xs font-semibold flex items-center gap-1 hover:bg-[#250506] hover:text-[#DBD0C0] transition-colors"
+                className="mafia-btn mafia-btn--sm"
               >
                 <X size={12} />
                 Закрыть
@@ -161,10 +159,7 @@ const CreateGamePage = ({ startGame }) => {
                 {users.map((user) => {
                   const isKicking = kickingPlayerId === user.id;
                   return (
-                    <div
-                      key={user.id}
-                      className="rounded-xl border border-[#250506]/15 bg-white/95 p-2.5 flex items-center justify-between gap-2"
-                    >
+                    <div key={user.id} className="mafia-panel bg-white/95 p-2.5 flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2 min-w-0">
                         <div className="w-8 h-8 rounded-full bg-[#250506] text-[#DBD0C0] flex items-center justify-center text-xs font-black">
                           {(user.name || "P").slice(0, 1).toUpperCase()}
@@ -178,11 +173,7 @@ const CreateGamePage = ({ startGame }) => {
                         type="button"
                         onClick={() => handleKickPlayer(user.id)}
                         disabled={isKicking}
-                        className={`text-xs rounded-lg border border-[#250506]/50 px-3 py-1.5 font-black transition-colors ${
-                          isKicking
-                            ? "opacity-50 cursor-not-allowed"
-                            : "hover:bg-[#250506] hover:text-[#DBD0C0]"
-                        }`}
+                        className="mafia-btn mafia-btn--sm"
                       >
                         {isKicking ? "..." : "Кик"}
                       </button>
@@ -201,11 +192,7 @@ const CreateGamePage = ({ startGame }) => {
           <button
             onClick={handleStart}
             disabled={isStarting}
-            className={`border rounded-md text-xl font-bold px-3 py-2 sm:w-[100%] ${
-              isStarting
-                ? "opacity-50 cursor-not-allowed"
-                : "hover:bg-[#250506] hover:text-[#DBD0C0]"
-            }`}
+            className="mafia-btn sm:w-[100%]"
           >
             {isStarting ? "Игра начинается..." : "Начать игру!"}
           </button>

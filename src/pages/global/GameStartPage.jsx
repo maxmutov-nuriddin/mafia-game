@@ -1,36 +1,79 @@
-/* eslint-disable react-hooks/exhaustive-deps */
+﻿/* eslint-disable react-hooks/exhaustive-deps */
 import { useNavigate, useParams } from "react-router-dom";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import CharacterListCard from "../../components/CharactersListCard";
-import { LoaderCircle, Undo2, Eye, Check } from 'lucide-react';
+import { Check, Eye, EyeOff, LoaderCircle, Undo2, UserRound } from "lucide-react";
 import { toast } from "react-toastify";
-import { getRoomByCustomId, listenToRoomPlayers, deleteRoom, deletePlayer, eliminatePlayer } from "../../services/gameService";
+import {
+  deleteRoom,
+  eliminatePlayer,
+  getRoomByCustomId,
+  listenToRoomPlayers,
+} from "../../services/gameService";
 
+const ROOM_LIFETIME_SECONDS = 900;
+
+const sortPlayers = (players = []) => {
+  return [...players].sort((a, b) => Number(!!a.eliminated) - Number(!!b.eliminated));
+};
 
 const GameStartPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
 
   const [games, setGames] = useState([]);
-  const [timeLeft, setTimeLeft] = useState(900); // 15 minut
-  const timerRef = useRef(null);
-  const gameIdRef = useRef(null); // found.id saqlash uchun
+  const [timeLeft, setTimeLeft] = useState(ROOM_LIFETIME_SECONDS);
   const [isStarting, setIsStarting] = useState(false);
-  const [selectedPlayers, setSelectedPlayers] = useState([]); // Selected players for kicking
+  const [selectedPlayers, setSelectedPlayers] = useState([]);
+  const [flippedPlayers, setFlippedPlayers] = useState({});
 
-  // Toggle player selection
-  const togglePlayerSelection = (playerId) => {
-    setSelectedPlayers(prev => {
+  const timerRef = useRef(null);
+  const gameIdRef = useRef(null);
+
+  const activePlayers = useMemo(() => games.filter((player) => !player.eliminated), [games]);
+
+  const togglePlayerSelection = (playerId, isEliminated) => {
+    if (isEliminated) return;
+
+    setSelectedPlayers((prev) => {
       if (prev.includes(playerId)) {
-        return prev.filter(id => id !== playerId);
-      } else {
-        return [...prev, playerId];
+        return prev.filter((idValue) => idValue !== playerId);
       }
+      return [...prev, playerId];
     });
   };
 
-  // Eliminate selected players (do not delete)
-  const kickSelectedPlayers = async () => {
+  const toggleCardFlip = (playerId, isEliminated) => {
+    if (isEliminated) return;
+
+    setFlippedPlayers((prev) => ({
+      ...prev,
+      [playerId]: !prev[playerId],
+    }));
+  };
+
+  const closeRoom = async () => {
+    setIsStarting(true);
+    try {
+      if (!gameIdRef.current) return;
+
+      await deleteRoom(gameIdRef.current);
+      navigate("/");
+    } catch (error) {
+      console.error(error);
+      toast.error("Ошибка при закрытии комнаты");
+      setIsStarting(false);
+    }
+  };
+
+  const startTimer = () => {
+    clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(closeRoom, ROOM_LIFETIME_SECONDS * 1000);
+    setTimeLeft(ROOM_LIFETIME_SECONDS);
+    toast.success("Время комнаты продлено");
+  };
+
+  const eliminateSelectedPlayers = async () => {
     if (selectedPlayers.length === 0) {
       toast.warn("Выберите игроков для выбытия");
       return;
@@ -39,47 +82,40 @@ const GameStartPage = () => {
     try {
       setIsStarting(true);
 
-      // Mark all selected players as eliminated
       for (const playerId of selectedPlayers) {
         await eliminatePlayer(gameIdRef.current, playerId);
       }
 
+      setGames((prev) =>
+        sortPlayers(
+          prev.map((player) =>
+            selectedPlayers.includes(player.id) ? { ...player, eliminated: true } : player
+          )
+        )
+      );
+
+      setFlippedPlayers((prev) => {
+        const next = { ...prev };
+        selectedPlayers.forEach((playerId) => {
+          delete next[playerId];
+        });
+        return next;
+      });
+
       toast.success(`Выбыло игроков: ${selectedPlayers.length}`);
-      setSelectedPlayers([]); // Clear selection
+      setSelectedPlayers([]);
     } catch (error) {
-      console.error("Error kicking players:", error);
+      console.error("Error eliminating players:", error);
       toast.error("Ошибка при отметке выбывших");
     } finally {
       setIsStarting(false);
     }
   };
 
-  // Xonani yopish funksiyasi
-  const closeRoom = async () => {
-    setIsStarting(true);
-    try {
-      if (!gameIdRef.current) return;
-
-      // Delete room (cascades to all players)
-      await deleteRoom(gameIdRef.current);
-
-      // Navigate to home
-      navigate("/");
-    } catch (error) {
-      toast.error("Xona yopishda xatolik:", error);
-    }
-  };
-
-  // Vaqtni boshqarish
-  const startTimer = () => {
-    clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(closeRoom, 900000); // 15 minut
-    setTimeLeft(900);
-    toast.success("Xonaga vaqt qo‘shildi");
-  };
-
   useEffect(() => {
     if (!id) return;
+
+    let unsubscribe;
 
     const fetchData = async () => {
       const room = await getRoomByCustomId(id);
@@ -87,60 +123,60 @@ const GameStartPage = () => {
 
       gameIdRef.current = room.id;
 
-      // Set up real-time listener for players
-      const unsubscribe = listenToRoomPlayers(room.id, (players) => {
-        setGames(players);
+      unsubscribe = listenToRoomPlayers(room.id, (players) => {
+        const sortedPlayers = sortPlayers(players);
+        setGames(sortedPlayers);
 
-        // Auto-delete room if all players left
-        if (players.length === 0) {
-          console.log("🗑️ All players left, deleting room...");
-          deleteRoom(room.id).then(() => {
-            console.log("✅ Room deleted");
-            clearTimeout(timerRef.current);
-            navigate("/");
-          }).catch(err => {
-            console.error("❌ Error deleting room:", err);
-          });
+        const playersById = Object.fromEntries(sortedPlayers.map((player) => [String(player.id), player]));
+
+        setSelectedPlayers((prev) =>
+          prev.filter((playerId) => {
+            const player = playersById[playerId];
+            return player && !player.eliminated;
+          })
+        );
+
+        setFlippedPlayers((prev) =>
+          Object.fromEntries(
+            Object.entries(prev).filter(([playerId]) => {
+              const player = playersById[playerId];
+              return player && !player.eliminated;
+            })
+          )
+        );
+
+        if (sortedPlayers.length === 0) {
+          deleteRoom(room.id)
+            .then(() => {
+              clearTimeout(timerRef.current);
+              navigate("/");
+            })
+            .catch((error) => {
+              console.error("Error deleting room:", error);
+            });
         }
       });
 
       startTimer();
-
-      // Return cleanup function
-      return unsubscribe;
     };
 
-    const cleanup = fetchData();
+    fetchData();
 
     return () => {
       clearTimeout(timerRef.current);
-      if (cleanup && typeof cleanup.then === 'function') {
-        cleanup.then(unsub => unsub && unsub());
-      }
+      if (typeof unsubscribe === "function") unsubscribe();
     };
   }, [id, navigate]);
 
-  // 🕒 Sekund sanash
   useEffect(() => {
     if (timeLeft <= 0) return;
+
     const interval = setInterval(() => {
       setTimeLeft((prev) => prev - 1);
     }, 1000);
+
     return () => clearInterval(interval);
   }, [timeLeft]);
-
-  const backBtn = () => {
-    navigate("/");
-  };
-
-  const deleteCharacter = async (userId) => {
-    try {
-      await deletePlayer(gameIdRef.current, userId);
-      setGames((prev) => prev.filter((c) => c.id !== userId));
-    } catch (error) {
-      toast.error("O'yinchini o'chirishda xatolik:", error);
-    }
-  };
 
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60)
@@ -158,129 +194,172 @@ const GameStartPage = () => {
     );
   }
 
-  const seeGamerName = (name) => {
-    toast.info(`Gamer: ${name}`)
-  }
-
-
   return (
     <>
-      <div className="mx-5 rounded-3xl mt-5 bg-[#DBD0C0] overflow-hidden">
-        {/* Header with logo, scrolling names, ID, and close button */}
-        <div className="flex justify-between px-5 py-2 items-center gap-4">
-          <button onClick={backBtn} className="flex-shrink-0">
-            <img src="/mafia-logo.png" className="w-11 h-11" alt="" />
+      <div className="mafia-shell mx-5 rounded-3xl mt-5 overflow-hidden">
+        <div className="flex justify-between px-4 py-2 items-center gap-3">
+          <button onClick={() => navigate("/")} className="flex-shrink-0">
+            <img src="/mafia-logo.png" className="w-12 h-12 object-contain" alt="Mafia" />
           </button>
 
-          {/* Scrolling player names banner - seamless loop */}
-          <div className="bg-[#250506] overflow-hidden mx-2 h-9 flex items-center rounded-2xl" >
-            <div
-              className="flex whitespace-nowrap w-full"
-              style={{
-                animation: 'marquee 20s linear infinite',
-              }}
-            >
-              {[1, 2].map((set) => (
-                <div key={`set-${set}`} className="flex gap-12 px-6">
-                  {games
-                    .filter(player => !player.eliminated)
-                    .map((player, index) => (
-                      <span key={`mq-${set}-${index}`} className="text-[#DBD0C0] text-sm font-bold">
-                        👤 {player.name}
+          <div className="bg-[#250506] overflow-hidden mx-2 h-9 flex flex-1 min-w-0 items-center rounded-2xl">
+            {activePlayers.length > 0 ? (
+              <div
+                className="inline-flex min-w-max whitespace-nowrap will-change-transform"
+                style={{ animation: "marquee 18s linear infinite" }}
+              >
+                {[1, 2].map((set) => (
+                  <div key={`set-${set}`} className="flex gap-12 px-6">
+                    {activePlayers.map((player) => (
+                      <span
+                        key={`mq-${set}-${player.id}`}
+                        className="text-[#DBD0C0] text-sm font-bold inline-flex items-center gap-1.5"
+                      >
+                        <UserRound size={14} />
+                        {player.name}
                       </span>
                     ))}
-                </div>
-              ))}
-            </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <span className="text-[#DBD0C0] text-sm font-bold px-4">Нет активных игроков</span>
+            )}
           </div>
 
-          <button className="text-[#250506] flex-shrink-0" onClick={closeRoom}><Undo2 /></button>
+          <button className="mafia-btn mafia-btn--icon flex-shrink-0" onClick={closeRoom}>
+            <Undo2 />
+          </button>
         </div>
       </div>
 
-      <style dangerouslySetInnerHTML={{
-        __html: `
-        @keyframes marquee {
-          0% { transform: translateX(0%); }
-          100% { transform: translateX(-50%); }
-        }
-      `}} />
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
+            @keyframes marquee {
+              0% { transform: translate3d(0, 0, 0); }
+              100% { transform: translate3d(-50%, 0, 0); }
+            }
+          `,
+        }}
+      />
 
-      <div
-        className="flex justify-around items-center flex-col lg:flex-row gap-5 my-5 mx-5 lg:my-0 h-[90vh] text-[#250506]"
-        id="global-page"
-      >
-        <div className="bg-[#DBD0C0] w-[100%] h-170 rounded-2xl flex flex-col items-center justify-center gap-5">
+      <div className="mafia-shell my-4 mx-5 rounded-3xl p-4 text-[#250506]" id="global-page">
+        <div className="grid grid-cols-1 lg:grid-cols-[320px_minmax(0,1fr)] gap-4 h-[70vh] lg:h-[calc(100vh-190px)] min-h-[360px]">
+        <div className="mafia-panel w-full flex flex-col items-center justify-center gap-5 px-4">
           <h1 className="text-4xl font-black">{formatTime(timeLeft)}</h1>
-          <button
-            className={`border rounded-md text-xl font-bold px-3 py-2 w-60 md:w-80 hover:bg-[#250506] hover:text-[#DBD0C0] ${isStarting
-              ? "opacity-50 cursor-not-allowed"
-              : "hover:bg-[#250506] hover:text-[#DBD0C0]"
-              }`}
-            onClick={closeRoom}
-            disabled={isStarting}
-          >
-            {isStarting ? "Комната закрывается..." : "Закрыть Комнату"}
-          </button>
-          <button
-            className="border rounded-md text-xl font-bold px-3 py-2 w-60 md:w-80 hover:bg-[#250506] hover:text-[#DBD0C0]"
-            onClick={startTimer}
-          >
-            Продлить Комнату
-          </button>
 
-          {/* Kick selected players button */}
-          {selectedPlayers.length > 0 && (
-            <button
-              className={`border-2 border-[#250506] rounded-md text-xl font-bold px-3 py-2 w-60 md:w-80 transition-colors ${isStarting ? "opacity-50 cursor-not-allowed" : "bg-[#DBD0C0] text-[#250506] hover:bg-[#250506] hover:text-[#DBD0C0]"}`}
-              onClick={kickSelectedPlayers}
-              disabled={isStarting}
-            >
-              {isStarting ? "Отмечаем выбывших..." : `Выбить выбранных (${selectedPlayers.length})`}
+          <div className="w-full max-w-[270px] flex flex-col gap-3">
+            <button className="mafia-btn" onClick={closeRoom} disabled={isStarting}>
+              {isStarting ? "Комната закрывается..." : "Закрыть комнату"}
             </button>
-          )}
+
+            <button className="mafia-btn" onClick={startTimer}>
+              Продлить комнату
+            </button>
+
+            {selectedPlayers.length > 0 && (
+              <button
+                className="mafia-btn mafia-btn--primary"
+                onClick={eliminateSelectedPlayers}
+                disabled={isStarting}
+              >
+                {isStarting ? "Отмечаем выбывших..." : `Выбить выбранных (${selectedPlayers.length})`}
+              </button>
+            )}
+          </div>
         </div>
 
-        <div className="bg-[#DBD0C0] w-[100%] h-170 rounded-2xl overflow-auto p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 auto-rows-[420px] gap-3 items-start justify-items-center content-start">
+        <div
+          className="mafia-panel w-full min-w-0 overflow-y-auto overflow-x-hidden p-3 grid auto-rows-[420px] gap-3 content-start"
+          style={{ gridTemplateColumns: "repeat(auto-fit, minmax(260px, 280px))", justifyContent: "center" }}
+        >
           {Array.isArray(games) && games.length > 0 ? (
-            games.map((character) => {
-              const isSelected = selectedPlayers.includes(character.id);
+            games.map((player) => {
+              const isEliminated = !!player.eliminated;
+              const isSelected = selectedPlayers.includes(player.id);
+              const isFlipped = isEliminated || !!flippedPlayers[player.id];
+              const playerName = player.name || "Игрок";
 
               return (
                 <div
-                  key={character.id}
-                  onClick={() => togglePlayerSelection(character.id)}
-                  className={`w-full max-w-[280px] h-full self-start relative rounded-xl transition-all duration-200 cursor-pointer ${character.eliminated
-                    ? 'opacity-40'
-                    : isSelected
-                      ? 'opacity-100 ring-2 ring-[#250506] bg-[#efe4d3]'
-                      : 'opacity-100 hover:bg-[#efe4d3]'
-                    }`}
+                  key={player.id}
+                  onClick={() => togglePlayerSelection(player.id, isEliminated)}
+                  className={`w-[280px] h-[420px] self-start relative rounded-xl transition-all duration-200 cursor-pointer ${
+                    isEliminated
+                      ? "opacity-50"
+                      : isSelected
+                        ? "opacity-100 ring-2 ring-[#250506] bg-[#efe4d3]"
+                        : "opacity-100 hover:bg-[#efe4d3]"
+                  }`}
                 >
-                  <button className="absolute right-6 top-5 z-10" onClick={(e) => { e.stopPropagation(); seeGamerName(character.name); }}>
-                    <Eye />
+                  <button
+                    className={`mafia-btn mafia-btn--tiny mafia-btn--icon absolute right-6 top-5 z-20 ${isEliminated ? "opacity-50 cursor-not-allowed" : ""}`}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      toggleCardFlip(player.id, isEliminated);
+                    }}
+                    disabled={isEliminated}
+                  >
+                    {isFlipped ? <EyeOff /> : <Eye />}
                   </button>
 
-                  {/* Selection indicator */}
                   {isSelected && (
                     <div className="absolute top-4 left-4 z-10 bg-[#250506] text-[#DBD0C0] w-7 h-7 rounded-full flex items-center justify-center shadow">
                       <Check size={16} />
                     </div>
                   )}
 
-                  <CharacterListCard
-                    character={character.character}
-                    onDelete={() => { }}
-                  />
+                  {isEliminated && (
+                    <div className="absolute top-4 left-4 z-10 bg-red-600 text-white px-2 py-1 rounded-full text-xs font-bold">
+                      Выбыл
+                    </div>
+                  )}
+
+                  <div className="relative h-full w-full p-2" style={{ perspective: "1200px" }}>
+                    <div
+                      className="relative h-full w-full transition-transform duration-500"
+                      style={{
+                        transformStyle: "preserve-3d",
+                        transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
+                      }}
+                    >
+                      <div
+                        className="absolute inset-0"
+                        style={{
+                          backfaceVisibility: "hidden",
+                          WebkitBackfaceVisibility: "hidden",
+                        }}
+                      >
+                        <div
+                          id="card-bg-imgs"
+                          className="w-full h-full border rounded shadow flex flex-col items-center justify-center px-4 text-center"
+                        >
+                          <p className="text-sm font-semibold opacity-70">Игрок</p>
+                          <p className="mt-2 text-3xl font-black break-words">{playerName}</p>
+                          <p className="mt-4 text-xs font-semibold opacity-80">Нажмите глаз, чтобы увидеть роль</p>
+                        </div>
+                      </div>
+
+                      <div
+                        className="absolute inset-0"
+                        style={{
+                          transform: "rotateY(180deg)",
+                          backfaceVisibility: "hidden",
+                          WebkitBackfaceVisibility: "hidden",
+                        }}
+                      >
+                        <CharacterListCard character={player.character} onDelete={() => {}} />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               );
             })
           ) : (
-            <h2 className="font-black lg:text-3xl md:text-2xl text-xl">
-              Нет Персонажей
-            </h2>
+            <h2 className="font-black lg:text-3xl md:text-2xl text-xl">Нет персонажей</h2>
           )}
-
+        </div>
         </div>
       </div>
     </>

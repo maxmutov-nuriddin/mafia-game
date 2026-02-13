@@ -3,6 +3,15 @@ html {
   scroll-behavior: smooth;
 }
 
+:root {
+  --mafia-bg: #250506;
+  --mafia-paper: #dbd0c0;
+  --mafia-panel: #e9dfcf;
+  --mafia-panel-strong: #f4ede1;
+  --mafia-ink: #250506;
+  --mafia-border: rgba(37, 5, 6, 0.22);
+}
+
 *,
 *::before,
 *::after {
@@ -15,7 +24,8 @@ body {
   flex-direction: column;
   height: 100%;
   margin: 0;
-  background: #250506;
+  background: var(--mafia-bg);
+  color: var(--mafia-ink);
 }
 
 main {
@@ -82,4 +92,133 @@ input::-webkit-inner-spin-button {
   background-size: cover;
   width: 100%;
   height: 100%;
+}
+
+.mafia-page {
+  min-height: 100vh;
+  color: var(--mafia-ink);
+}
+
+.mafia-shell {
+  background: var(--mafia-paper);
+  border: 1.5px solid var(--mafia-border);
+  border-radius: 1.25rem;
+  box-shadow: 0 12px 30px rgba(37, 5, 6, 0.16);
+}
+
+.mafia-panel {
+  background: var(--mafia-panel);
+  border: 1.5px solid var(--mafia-border);
+  border-radius: 1rem;
+}
+
+.mafia-panel-strong {
+  background: var(--mafia-panel-strong);
+  border: 1.5px solid var(--mafia-border);
+  border-radius: 1rem;
+}
+
+.mafia-input {
+  width: 100%;
+  border: 1.5px solid var(--mafia-border);
+  border-radius: 0.65rem;
+  background: #ffffff;
+  color: var(--mafia-ink);
+  padding: 0.58rem 0.75rem;
+  font-size: 1rem;
+  font-weight: 700;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mafia-input::placeholder {
+  color: #8a7a66;
+}
+
+.mafia-input:focus {
+  outline: none;
+  border-color: rgba(37, 5, 6, 0.45);
+  box-shadow: 0 0 0 3px rgba(37, 5, 6, 0.12);
+}
+
+.mafia-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  border: 2px solid rgba(37, 5, 6, 0.3);
+  border-radius: 0.75rem;
+  background: #f4ede1;
+  color: #250506;
+  padding: 0.7rem 1rem;
+  font-size: 1.125rem;
+  font-weight: 800;
+  line-height: 1.1;
+  white-space: nowrap;
+  box-shadow: 0 2px 0 rgba(37, 5, 6, 0.18);
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease,
+    box-shadow 0.2s ease, transform 0.2s ease, opacity 0.2s ease;
+}
+
+.mafia-btn:hover:not(:disabled) {
+  background: #250506;
+  color: #f4ede1;
+  border-color: #250506;
+}
+
+.mafia-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.mafia-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.mafia-btn--primary {
+  background: #250506;
+  color: #f4ede1;
+  border-color: #250506;
+}
+
+.mafia-btn--primary:hover:not(:disabled) {
+  background: #3d0b0d;
+  border-color: #3d0b0d;
+}
+
+.mafia-btn--danger {
+  background: #d94a4f;
+  color: #ffffff;
+  border-color: #c73c41;
+}
+
+.mafia-btn--danger:hover:not(:disabled) {
+  background: #b9353a;
+  border-color: #b9353a;
+  color: #ffffff;
+}
+
+.mafia-btn--icon {
+  width: auto;
+  min-width: 2.5rem;
+  padding: 0.5rem 0.8rem;
+  border-radius: 999px;
+}
+
+.mafia-btn--sm {
+  width: auto;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.85rem;
+  border-width: 1.5px;
+  border-radius: 0.6rem;
+}
+
+.mafia-btn--tiny {
+  width: auto;
+  min-width: 2rem;
+  padding: 0.25rem 0.45rem;
+  font-size: 0.78rem;
+  border-width: 1.5px;
+  border-radius: 0.55rem;
+  box-shadow: 0 1px 0 rgba(37, 5, 6, 0.18);
 }

@@ -93,19 +93,15 @@ const CharacterGamePage = () => {
 
   return (
     <div
-      className="flex justify-center items-center flex-col h-[100vh] text-[#250506] px-2"
+      className="mafia-page flex justify-center items-center flex-col px-2"
       id="global-page"
     >
-      <div className="bg-[#DBD0C0] w-full sm:w-100 h-100 rounded-2xl flex flex-col items-center justify-center gap-5 relative">
+      <div className="mafia-shell w-full sm:w-100 h-100 flex flex-col items-center justify-center gap-5 relative">
         <button
           type="button"
           onClick={handleLeaveRoom}
           disabled={isLeaving}
-          className={`absolute top-4 right-4 z-10 border-2 border-[#250506] rounded-full px-3.5 py-1.5 font-bold flex items-center gap-2 bg-[#f6eee2] shadow-sm transition-all duration-200 ${
-            isLeaving
-              ? "opacity-60 cursor-not-allowed"
-              : "hover:bg-[#250506] hover:text-[#DBD0C0] hover:border-[#DBD0C0] hover:ring-2 hover:ring-[#DBD0C0]/35"
-          }`}
+          className="mafia-btn mafia-btn--icon absolute top-4 right-4 z-10"
         >
           {isLeaving ? (
             <LoaderCircle size={16} className="animate-spin" />
@@ -120,7 +116,7 @@ const CharacterGamePage = () => {
         {!playerData || !playerData.character ? (
           <h1 className="text-3xl font-bold">ЖДИТЕ!</h1>
         ) : playerData.eliminated ? (
-          <div className="w-full max-w-[380px] min-h-[260px] rounded-xl border border-[#250506]/20 bg-[#f6eee2] flex flex-col items-center justify-center p-6 text-center">
+          <div className="mafia-panel-strong w-full max-w-[380px] min-h-[260px] flex flex-col items-center justify-center p-6 text-center">
             <h2 className="text-3xl font-black text-red-600">ВЫ ВЫБЫЛИ</h2>
             <p className="mt-2 text-lg font-semibold">из игры</p>
           </div>

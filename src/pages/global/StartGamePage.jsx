@@ -38,27 +38,24 @@ const StartGamePage = ({ IsFullRoom, IsFullGamer, generateId }) => {
 
   return (
     <div
-      className="flex justify-center items-center flex-col h-[100vh] text-[#250506] px-2"
+      className="mafia-page flex justify-center items-center flex-col px-2"
       id="global-page"
     >
-      <div className="bg-[#DBD0C0] px-4 sm:px-0 w-full sm:w-100 h-100 rounded-2xl flex flex-col items-center justify-center gap-5 relative ">
+      <div className="mafia-shell px-4 sm:px-0 w-full sm:w-100 h-100 flex flex-col items-center justify-center gap-5 relative ">
         <img src="/mafia-logo.png" className="w-20 h-20" alt="" />
         <h2 className="text-3xl sm:text-5xl font-black">Начать игру</h2>
         <div className="flex flex-col gap-4 ">
           <button
             onClick={handleStart}
             disabled={isStarting || IsFullRoom}
-            className={`border rounded-md text-lg sm:text-xl font-bold px-3 py-2 w-full sm:w-80 hover:bg-[#250506] hover:text-[#DBD0C0] ${isStarting || IsFullRoom
-              ? "opacity-50 cursor-not-allowed"
-              : "hover:bg-[#250506] hover:text-[#DBD0C0]"
-              }`}
+            className="mafia-btn w-full sm:w-80"
           >
             {isStarting ? "Создаем комнату..." : "Создать комнату!"}
           </button>
           <button
             disabled={IsFullGamer}
             onClick={handleJoin}
-            className={`border rounded-md text-lg sm:text-xl font-bold px-3 py-2 w-full sm:w-80 hover:bg-[#250506] hover:text-[#DBD0C0] ${IsFullGamer ? "opacity-50 cursor-not-allowed" : ""}`}
+            className="mafia-btn w-full sm:w-80"
           >
             Присоединиться комнату!
           </button>

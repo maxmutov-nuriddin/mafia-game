@@ -118,9 +118,9 @@ const AdminDashboardPage = () => {
   }
 
   return (
-    <div className="min-h-screen text-[#250506] p-4 sm:p-6" id="global-page">
+    <div className="mafia-page p-4 sm:p-6" id="global-page">
       <div className="max-w-6xl mx-auto flex flex-col gap-4">
-        <div className="bg-[#DBD0C0] rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="mafia-shell p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-4">
             <img src="/mafia-logo.png" className="w-14 h-14" alt="Логотип Мафии" />
             <div>
@@ -136,7 +136,7 @@ const AdminDashboardPage = () => {
               type="button"
               onClick={fetchRooms}
               disabled={busyKey.length > 0}
-              className="border rounded-md px-3 py-2 font-bold flex items-center gap-2 hover:bg-[#250506] hover:text-[#DBD0C0] disabled:opacity-50 disabled:cursor-not-allowed"
+              className="mafia-btn mafia-btn--icon"
             >
               <RefreshCcw size={18} />
               Обновить
@@ -144,7 +144,7 @@ const AdminDashboardPage = () => {
             <button
               type="button"
               onClick={handleLogout}
-              className="border rounded-md px-3 py-2 font-bold flex items-center gap-2 hover:bg-[#250506] hover:text-[#DBD0C0]"
+              className="mafia-btn mafia-btn--icon"
             >
               <LogOut size={18} />
               Выйти
@@ -153,7 +153,7 @@ const AdminDashboardPage = () => {
         </div>
 
         {rooms.length === 0 ? (
-          <div className="bg-[#DBD0C0] rounded-2xl p-8 text-center font-black text-2xl">
+          <div className="mafia-shell p-8 text-center font-black text-2xl">
             Нет активных комнат
           </div>
         ) : (
@@ -172,7 +172,7 @@ const AdminDashboardPage = () => {
               const roomBusy = busyKey === `room-${room.id}`;
 
               return (
-                <div key={room.id} className="bg-[#DBD0C0] rounded-2xl p-4 flex flex-col gap-4">
+                <div key={room.id} className="mafia-shell p-4 flex flex-col gap-4">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                     <div>
                       <p className="text-xl font-black">ID комнаты: {room.customId}</p>
@@ -203,7 +203,7 @@ const AdminDashboardPage = () => {
                       <button
                         type="button"
                         onClick={() => navigate(`/gamestart/${room.customId}`)}
-                        className="border rounded-md px-3 py-2 font-bold flex items-center gap-2 hover:bg-[#250506] hover:text-[#DBD0C0]"
+                        className="mafia-btn mafia-btn--icon"
                       >
                         <Play size={16} />
                         Открыть
@@ -212,7 +212,7 @@ const AdminDashboardPage = () => {
                         type="button"
                         onClick={() => handleDeleteRoom(room)}
                         disabled={roomBusy}
-                        className="border rounded-md px-3 py-2 font-bold flex items-center gap-2 bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="mafia-btn mafia-btn--danger mafia-btn--icon"
                       >
                         {roomBusy ? <LoaderCircle size={16} className="animate-spin" /> : <Trash2 size={16} />}
                         Удалить
@@ -223,15 +223,12 @@ const AdminDashboardPage = () => {
                   {players.length === 0 ? (
                     <p className="font-semibold">В этой комнате нет игроков.</p>
                   ) : (
-                    <div className="border rounded-xl p-3 flex flex-col gap-2 bg-[#f4ede1] max-h-72 overflow-auto">
+                    <div className="mafia-panel-strong p-3 flex flex-col gap-2 max-h-72 overflow-auto">
                       {players.map((player) => {
                         const playerBusy = busyKey === `player-${player.id}`;
 
                         return (
-                          <div
-                            key={player.id}
-                            className="bg-white rounded-lg p-2 flex items-center justify-between gap-2"
-                          >
+                          <div key={player.id} className="mafia-panel bg-white p-2 flex items-center justify-between gap-2">
                             <div className="min-w-0">
                               <p className="font-bold truncate">{player.name || "Игрок"}</p>
                               <p className="text-xs opacity-80 truncate">ID игрока: {player.id}</p>
@@ -247,7 +244,7 @@ const AdminDashboardPage = () => {
                               type="button"
                               onClick={() => handleDeletePlayer(room.id, player.id)}
                               disabled={playerBusy}
-                              className="border rounded-md px-2 py-1 font-semibold text-sm flex items-center gap-1 bg-red-500 text-white hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="mafia-btn mafia-btn--danger mafia-btn--sm"
                             >
                               {playerBusy ? (
                                 <LoaderCircle size={14} className="animate-spin" />

@@ -104,7 +104,7 @@ const ProfileAuthWidget = () => {
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="fixed top-3 right-3 z-[120] border-2 border-[#250506] bg-[#DBD0C0] text-[#250506] rounded-full px-4 py-2 font-semibold shadow transition-all duration-200 flex items-center gap-2 hover:bg-[#250506] hover:text-[#DBD0C0] hover:border-[#DBD0C0] hover:ring-2 hover:ring-[#DBD0C0]/35"
+        className="mafia-btn mafia-btn--icon fixed top-3 right-3 z-[120]"
       >
         <UserRound size={16} />
         <span className="max-w-[120px] truncate">{profileLabel}</span>
@@ -119,7 +119,7 @@ const ProfileAuthWidget = () => {
             aria-label="Close auth modal"
           />
 
-          <div className="fixed top-16 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-3 z-[140] w-[min(360px,calc(100vw-1.25rem))] rounded-2xl border-2 border-[#250506]/25 bg-[#f6eee2] shadow-[0_20px_48px_rgba(0,0,0,0.32)] overflow-hidden">
+          <div className="mafia-shell fixed top-16 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-3 z-[140] w-[min(360px,calc(100vw-1.25rem))] shadow-[0_20px_48px_rgba(0,0,0,0.32)] overflow-hidden">
             <div className="flex items-center justify-between px-4 py-3 bg-[#250506] text-[#DBD0C0]">
               <h3 className="text-lg font-black">
                 {hasAccountUser ? "Профиль" : mode === "login" ? "Вход" : "Регистрация"}
@@ -127,7 +127,7 @@ const ProfileAuthWidget = () => {
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="rounded-md p-1.5 hover:bg-[#DBD0C0] hover:text-[#250506] transition-colors"
+                className="mafia-btn mafia-btn--sm"
                 aria-label="Close"
               >
                 <X size={16} />
@@ -137,14 +137,14 @@ const ProfileAuthWidget = () => {
             <div className="p-4 text-[#250506]">
               {hasAccountUser ? (
                 <div className="flex flex-col gap-3">
-                  <div className="rounded-xl bg-white border border-[#250506]/15 p-3">
+                  <div className="mafia-panel bg-white p-3">
                     <p className="text-sm opacity-75">Вы вошли как</p>
                     <p className="font-bold break-all">{user.email || profileLabel}</p>
                   </div>
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="w-full border border-[#250506] rounded-md py-2 font-bold flex items-center justify-center gap-2 hover:bg-[#250506] hover:text-[#DBD0C0] transition-colors"
+                    className="mafia-btn w-full"
                   >
                     <LogOut size={16} />
                     Выйти
@@ -156,10 +156,10 @@ const ProfileAuthWidget = () => {
                     <button
                       type="button"
                       onClick={() => setMode("login")}
-                      className={`border rounded-md py-2 font-bold transition-colors ${
+                      className={`mafia-btn w-full ${
                         mode === "login"
-                          ? "bg-[#250506] text-[#DBD0C0] border-[#250506]"
-                          : "bg-white text-[#250506] border-[#250506]/40 hover:bg-[#250506] hover:text-[#DBD0C0]"
+                          ? "mafia-btn--primary"
+                          : ""
                       }`}
                     >
                       Вход
@@ -167,10 +167,10 @@ const ProfileAuthWidget = () => {
                     <button
                       type="button"
                       onClick={() => setMode("register")}
-                      className={`border rounded-md py-2 font-bold transition-colors ${
+                      className={`mafia-btn w-full ${
                         mode === "register"
-                          ? "bg-[#250506] text-[#DBD0C0] border-[#250506]"
-                          : "bg-white text-[#250506] border-[#250506]/40 hover:bg-[#250506] hover:text-[#DBD0C0]"
+                          ? "mafia-btn--primary"
+                          : ""
                       }`}
                     >
                       Регистрация
@@ -181,11 +181,7 @@ const ProfileAuthWidget = () => {
                     type="button"
                     onClick={handleGoogleLogin}
                     disabled={isLoading}
-                    className={`w-full border border-[#250506]/35 rounded-md py-2.5 bg-white text-[#250506] font-bold flex items-center justify-center gap-2 transition-colors ${
-                      isLoading
-                        ? "opacity-50 cursor-not-allowed"
-                        : "hover:bg-[#250506] hover:text-[#DBD0C0]"
-                    }`}
+                    className="mafia-btn w-full"
                   >
                     <Chrome size={16} />
                     Продолжить через Google
@@ -207,7 +203,7 @@ const ProfileAuthWidget = () => {
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="you@example.com"
                         autoComplete="email"
-                        className="w-full border border-[#250506]/25 rounded-md pl-9 pr-3 py-2.5 bg-white text-[#250506] placeholder:text-[#8a7a66]"
+                        className="mafia-input pl-9 pr-3 py-2.5 bg-white"
                       />
                     </div>
 
@@ -220,7 +216,7 @@ const ProfileAuthWidget = () => {
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="******"
                         autoComplete={mode === "register" ? "new-password" : "current-password"}
-                        className="w-full border border-[#250506]/25 rounded-md pl-9 pr-3 py-2.5 bg-white text-[#250506] placeholder:text-[#8a7a66]"
+                        className="mafia-input pl-9 pr-3 py-2.5 bg-white"
                       />
                     </div>
 
@@ -233,7 +229,7 @@ const ProfileAuthWidget = () => {
                           onChange={(e) => setConfirmPassword(e.target.value)}
                           placeholder="******"
                           autoComplete="new-password"
-                          className="w-full border border-[#250506]/25 rounded-md px-3 py-2.5 bg-white text-[#250506] placeholder:text-[#8a7a66]"
+                          className="mafia-input px-3 py-2.5 bg-white"
                         />
                       </>
                     )}
@@ -241,11 +237,7 @@ const ProfileAuthWidget = () => {
                     <button
                       type="submit"
                       disabled={isLoading}
-                      className={`mt-1 w-full rounded-md py-2.5 font-black transition-colors ${
-                        isLoading
-                          ? "opacity-50 cursor-not-allowed bg-[#250506] text-[#DBD0C0]"
-                          : "bg-[#250506] text-[#DBD0C0] hover:bg-[#402021]"
-                      }`}
+                      className="mafia-btn mafia-btn--primary mt-1 w-full"
                     >
                       {isLoading ? "Подождите..." : mode === "login" ? "Войти" : "Зарегистрироваться"}
                     </button>

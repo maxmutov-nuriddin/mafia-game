@@ -204,6 +204,7 @@ const ProfileAuthWidget = () => {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="you@example.com"
+                        autoComplete="email"
                         className="w-full border border-[#250506]/25 rounded-md pl-9 pr-3 py-2.5 bg-white text-[#250506] placeholder:text-[#8a7a66]"
                       />
                     </div>
@@ -216,6 +217,7 @@ const ProfileAuthWidget = () => {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="******"
+                        autoComplete={mode === "register" ? "new-password" : "current-password"}
                         className="w-full border border-[#250506]/25 rounded-md pl-9 pr-3 py-2.5 bg-white text-[#250506] placeholder:text-[#8a7a66]"
                       />
                     </div>
@@ -228,6 +230,7 @@ const ProfileAuthWidget = () => {
                           value={confirmPassword}
                           onChange={(e) => setConfirmPassword(e.target.value)}
                           placeholder="******"
+                          autoComplete="new-password"
                           className="w-full border border-[#250506]/25 rounded-md px-3 py-2.5 bg-white text-[#250506] placeholder:text-[#8a7a66]"
                         />
                       </>

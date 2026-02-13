@@ -3,14 +3,14 @@ import { getDatabase } from 'firebase/database';
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
 const firebaseConfig = {
-   apiKey: "AIzaSyC1krwZreM63Mqmjz5CBYJUzjc-fleBzqs",
-   authDomain: "mafia-d2c5d.firebaseapp.com",
-   databaseURL: "https://mafia-d2c5d-default-rtdb.firebaseio.com",
-   projectId: "mafia-d2c5d",
-   storageBucket: "mafia-d2c5d.firebasestorage.app",
-   messagingSenderId: "205580538027",
-   appId: "1:205580538027:web:9d1b842b79cfca5272a7ee",
-   measurementId: "G-NHG3PWE426"
+   apiKey: "AIzaSyAKR_fRlSh3dLZGYh5IzUqcjqVi4nTZWNs",
+   authDomain: "mvmafia-2.firebaseapp.com",
+   databaseURL: "https://mvmafia-2-default-rtdb.firebaseio.com",
+   projectId: "mvmafia-2",
+   storageBucket: "mvmafia-2.firebasestorage.app",
+   messagingSenderId: "10354978426",
+   appId: "1:10354978426:web:2e508bb2274a07c21495c3",
+   measurementId: "G-GSZ8K1TXMG"
 };
 
 const app = initializeApp(firebaseConfig);

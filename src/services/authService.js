@@ -32,6 +32,7 @@ export const subscribeAuthState = (callback) => {
 
 export const getAuthErrorMessage = (error) => {
    const code = error?.code || "";
+   const message = String(error?.message || "");
 
   if (code === "auth/invalid-email") return "Некорректный email.";
   if (code === "auth/user-not-found") return "Пользователь не найден.";
@@ -67,6 +68,11 @@ export const getAuthErrorMessage = (error) => {
   }
   if (code === "auth/app-not-authorized") {
     return "Приложение не авторизовано в Firebase.";
+  }
+
+  // Some browsers/providers return this only in message text
+  if (message.includes("CONFIGURATION_NOT_FOUND")) {
+    return "Google/Email вход не настроен в Firebase Authentication для этого проекта.";
   }
 
   if (code) return `Ошибка авторизации: ${code}`;

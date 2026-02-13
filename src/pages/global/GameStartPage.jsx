@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import CharacterListCard from "../../components/CharactersListCard";
 import { LoaderCircle, Undo2, Eye, Check } from 'lucide-react';
 import { toast } from "react-toastify";
-import { getRoomByCustomId, listenToRoomPlayers, deleteRoom, deletePlayer } from "../../services/gameService";
+import { getRoomByCustomId, listenToRoomPlayers, deleteRoom, deletePlayer, eliminatePlayer } from "../../services/gameService";
 
 
 const GameStartPage = () => {
@@ -29,26 +29,26 @@ const GameStartPage = () => {
     });
   };
 
-  // Kick selected players
+  // Eliminate selected players (do not delete)
   const kickSelectedPlayers = async () => {
     if (selectedPlayers.length === 0) {
-      toast.warn("Выберите игроков для выгона");
+      toast.warn("Выберите игроков для выбытия");
       return;
     }
 
     try {
       setIsStarting(true);
 
-      // Delete all selected players
+      // Mark all selected players as eliminated
       for (const playerId of selectedPlayers) {
-        await deletePlayer(gameIdRef.current, playerId);
+        await eliminatePlayer(gameIdRef.current, playerId);
       }
 
-      toast.success(`Выгнано игроков: ${selectedPlayers.length}`);
+      toast.success(`Выбыло игроков: ${selectedPlayers.length}`);
       setSelectedPlayers([]); // Clear selection
     } catch (error) {
       console.error("Error kicking players:", error);
-      toast.error("Ошибка при выгоне игроков");
+      toast.error("Ошибка при отметке выбывших");
     } finally {
       setIsStarting(false);
     }
@@ -236,7 +236,7 @@ const GameStartPage = () => {
               onClick={kickSelectedPlayers}
               disabled={isStarting}
             >
-              {isStarting ? "Выгоняем..." : `Выгнать выбранных (${selectedPlayers.length})`}
+              {isStarting ? "Отмечаем выбывших..." : `Выбить выбранных (${selectedPlayers.length})`}
             </button>
           )}
         </div>

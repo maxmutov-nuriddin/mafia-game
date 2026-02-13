@@ -1,6 +1,7 @@
 import {
   createUserWithEmailAndPassword,
   onAuthStateChanged,
+  signInAnonymously,
   signInWithEmailAndPassword,
   signInWithPopup,
   signOut,
@@ -28,6 +29,12 @@ export const logoutUser = async () => {
 
 export const subscribeAuthState = (callback) => {
   return onAuthStateChanged(auth, callback);
+};
+
+export const ensureAnonymousAuth = async () => {
+  if (auth.currentUser) return auth.currentUser;
+  const result = await signInAnonymously(auth);
+  return result.user;
 };
 
 export const getAuthErrorMessage = (error) => {

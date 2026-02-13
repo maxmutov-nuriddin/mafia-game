@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { useCallback, useEffect, useRef, useState } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 
 import StartGamePage from "./pages/global/StartGamePage";
 import CreateGamePage from "./pages/global/CreateGamePage";
@@ -16,6 +16,8 @@ import "react-toastify/dist/ReactToastify.css";
 import "./App.css";
 import Animated from "./pages/animated/Animated";
 import ProfileAuthWidget from "./components/ProfileAuthWidget";
+import { LoaderCircle } from "lucide-react";
+import { ensureAnonymousAuth, subscribeAuthState } from "./services/authService";
 
 // ====== 🔥 Firebase Service Import
 import {
@@ -102,8 +104,18 @@ function getMainRoleNames(count) {
   return [];
 }
 
+function ProfileWidgetByRoute({ showWhenReady }) {
+  const location = useLocation();
+  const isGameRoute =
+    location.pathname.startsWith("/gamestart/") || location.pathname === "/character";
+
+  if (!showWhenReady || isGameRoute) return null;
+  return <ProfileAuthWidget />;
+}
+
 function App() {
   const [animDesign, setAnimDesign] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
   const [id, setId] = useState();
   const generatedIds = useRef(new Set());
   const [IsFullRoom, setIsFullRoom] = useState(false);
@@ -155,13 +167,41 @@ function App() {
 
   }, []);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    const unsubscribe = subscribeAuthState(async (user) => {
+      if (!isMounted) return;
+
+      if (user) {
+        setAuthReady(true);
+        return;
+      }
+
+      try {
+        await ensureAnonymousAuth();
+      } catch (error) {
+        console.error("Anonymous auth error:", error);
+        toast.error("Ошибка гостевого входа. Обновите страницу.");
+        if (isMounted) {
+          setAuthReady(true);
+        }
+      }
+    });
+
+    return () => {
+      isMounted = false;
+      unsubscribe();
+    };
+  }, []);
+
 
   useEffect(() => {
     // Only run analysis after animation is complete
-    if (animDesign) {
+    if (animDesign && authReady) {
       seeData();
     }
-  }, [animDesign, seeData]);
+  }, [animDesign, authReady, seeData]);
 
   // ===== 🔥 Функция очистки Firebase
   const clearAllGamesAndUsers = async () => {
@@ -351,10 +391,15 @@ function App() {
           theme="light"
           transition={Slide}
         />
-        {animDesign && <ProfileAuthWidget />}
+        <ProfileWidgetByRoute showWhenReady={animDesign && authReady} />
         {
           !animDesign ? (
             <Animated onFinish={() => setAnimDesign(true)} />
+
+          ) : !authReady ? (
+            <div className="flex items-center justify-center h-screen">
+              <LoaderCircle className="w-10 h-10 animate-spin text-[#DBD0C0]" />
+            </div>
 
           ) : (
             <Routes>

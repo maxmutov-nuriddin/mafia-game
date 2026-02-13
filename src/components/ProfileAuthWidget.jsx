@@ -27,12 +27,14 @@ const ProfileAuthWidget = () => {
     return () => unsubscribe();
   }, []);
 
+  const hasAccountUser = !!user && !user.isAnonymous;
+
   const profileLabel = useMemo(() => {
-    if (!user) return "Профиль";
+    if (!hasAccountUser) return "Профиль";
     if (user.displayName) return user.displayName;
     if (user.email) return user.email.split("@")[0];
     return "Пользователь";
-  }, [user]);
+  }, [hasAccountUser, user]);
 
   const resetForm = () => {
     setEmail("");
@@ -102,7 +104,7 @@ const ProfileAuthWidget = () => {
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="fixed top-3 right-3 z-40 border-2 border-[#250506] bg-[#DBD0C0] text-[#250506] rounded-full px-4 py-2 font-semibold shadow transition-all duration-200 flex items-center gap-2 hover:bg-[#250506] hover:text-[#DBD0C0] hover:border-[#DBD0C0] hover:ring-2 hover:ring-[#DBD0C0]/35"
+        className="fixed top-3 right-3 z-[120] border-2 border-[#250506] bg-[#DBD0C0] text-[#250506] rounded-full px-4 py-2 font-semibold shadow transition-all duration-200 flex items-center gap-2 hover:bg-[#250506] hover:text-[#DBD0C0] hover:border-[#DBD0C0] hover:ring-2 hover:ring-[#DBD0C0]/35"
       >
         <UserRound size={16} />
         <span className="max-w-[120px] truncate">{profileLabel}</span>
@@ -113,14 +115,14 @@ const ProfileAuthWidget = () => {
           <button
             type="button"
             onClick={() => setIsOpen(false)}
-            className="fixed inset-0 z-40 bg-[#250506]/45"
+            className="fixed inset-0 z-[130] bg-[#250506]/45"
             aria-label="Close auth modal"
           />
 
-          <div className="fixed top-16 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-3 z-50 w-[min(360px,calc(100vw-1.25rem))] rounded-2xl border-2 border-[#250506]/25 bg-[#f6eee2] shadow-[0_20px_48px_rgba(0,0,0,0.32)] overflow-hidden">
+          <div className="fixed top-16 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-3 z-[140] w-[min(360px,calc(100vw-1.25rem))] rounded-2xl border-2 border-[#250506]/25 bg-[#f6eee2] shadow-[0_20px_48px_rgba(0,0,0,0.32)] overflow-hidden">
             <div className="flex items-center justify-between px-4 py-3 bg-[#250506] text-[#DBD0C0]">
               <h3 className="text-lg font-black">
-                {user ? "Профиль" : mode === "login" ? "Вход" : "Регистрация"}
+                {hasAccountUser ? "Профиль" : mode === "login" ? "Вход" : "Регистрация"}
               </h3>
               <button
                 type="button"
@@ -133,7 +135,7 @@ const ProfileAuthWidget = () => {
             </div>
 
             <div className="p-4 text-[#250506]">
-              {user ? (
+              {hasAccountUser ? (
                 <div className="flex flex-col gap-3">
                   <div className="rounded-xl bg-white border border-[#250506]/15 p-3">
                     <p className="text-sm opacity-75">Вы вошли как</p>

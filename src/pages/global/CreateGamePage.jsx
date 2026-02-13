@@ -8,6 +8,7 @@ import {
   deleteRoom,
   deletePlayer,
 } from "../../services/gameService";
+import { clearAllRememberedPlayerSessions } from "../../utils/playerSession";
 
 const CreateGamePage = ({ startGame }) => {
   const navigate = useNavigate();
@@ -69,6 +70,7 @@ const CreateGamePage = ({ startGame }) => {
     try {
       if (!gameIdRef.current) return;
       await deleteRoom(gameIdRef.current);
+      clearAllRememberedPlayerSessions();
       navigate("/");
     } catch (error) {
       toast.error("Ошибка при закрытии комнаты");

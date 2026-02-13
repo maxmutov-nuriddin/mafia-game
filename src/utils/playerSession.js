@@ -1,11 +1,12 @@
 export const LAST_PLAYER_SESSION_KEY = "mafia_last_player_session";
+const PLAYER_SESSION_PREFIX = "mafia_player_session_";
 
 const normalizeName = (name) => String(name || "").trim().toLowerCase();
 
 const getSessionByNameKey = (gameId, playerName) => {
   const cleanGameId = String(gameId || "").trim();
   const normalizedName = normalizeName(playerName);
-  return `mafia_player_session_${cleanGameId}_${normalizedName}`;
+  return `${PLAYER_SESSION_PREFIX}${cleanGameId}_${normalizedName}`;
 };
 
 export const rememberPlayerSession = ({ gameId, userId, playerName }) => {
@@ -54,4 +55,18 @@ export const getLastRememberedPlayerSession = () => {
 
 export const clearLastRememberedPlayerSession = () => {
   localStorage.removeItem(LAST_PLAYER_SESSION_KEY);
+};
+
+export const clearAllRememberedPlayerSessions = () => {
+  const keysToDelete = [];
+
+  for (let i = 0; i < localStorage.length; i += 1) {
+    const key = localStorage.key(i);
+    if (!key) continue;
+    if (key === LAST_PLAYER_SESSION_KEY || key.startsWith(PLAYER_SESSION_PREFIX)) {
+      keysToDelete.push(key);
+    }
+  }
+
+  keysToDelete.forEach((key) => localStorage.removeItem(key));
 };

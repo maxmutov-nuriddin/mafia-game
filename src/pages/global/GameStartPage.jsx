@@ -10,6 +10,7 @@ import {
   getRoomByCustomId,
   listenToRoomPlayers,
 } from "../../services/gameService";
+import { clearAllRememberedPlayerSessions } from "../../utils/playerSession";
 
 const ROOM_LIFETIME_SECONDS = 900;
 
@@ -58,6 +59,7 @@ const GameStartPage = () => {
       if (!gameIdRef.current) return;
 
       await deleteRoom(gameIdRef.current);
+      clearAllRememberedPlayerSessions();
       navigate("/");
     } catch (error) {
       console.error(error);
@@ -149,6 +151,7 @@ const GameStartPage = () => {
           deleteRoom(room.id)
             .then(() => {
               clearTimeout(timerRef.current);
+              clearAllRememberedPlayerSessions();
               navigate("/");
             })
             .catch((error) => {

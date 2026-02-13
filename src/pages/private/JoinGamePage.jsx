@@ -3,6 +3,12 @@ import { useState } from "react";
 import { LoaderCircle, Undo2 } from 'lucide-react';
 import { toast } from "react-toastify";
 import { getRoomByCustomId, getPlayersInRoom, addPlayerToRoom } from "../../services/gameService";
+import {
+  ADMIN_LOGIN_ID,
+  ADMIN_LOGIN_NAME,
+  ADMIN_PERSIST_KEY,
+  ADMIN_SESSION_KEY,
+} from "../../constants/admin";
 
 const JoinGamePage = () => {
   const navigate = useNavigate();
@@ -17,8 +23,22 @@ const JoinGamePage = () => {
     setIsJoining(true);
 
     try {
+      const cleanGameId = String(gameId || "").trim();
+      const cleanUsername = String(username || "").trim();
+
+      const isAdminLogin =
+        cleanGameId === ADMIN_LOGIN_ID &&
+        cleanUsername.toLowerCase() === ADMIN_LOGIN_NAME;
+
+      if (isAdminLogin) {
+        sessionStorage.setItem(ADMIN_SESSION_KEY, "true");
+        localStorage.setItem(ADMIN_PERSIST_KEY, "true");
+        navigate("/dashboard");
+        return;
+      }
+
       // 1. Find room by customId
-      const room = await getRoomByCustomId(gameId);
+      const room = await getRoomByCustomId(cleanGameId);
 
       if (!room) {
         toast.warn("Bunday ID ga ega o'yin topilmadi!");
@@ -33,7 +53,7 @@ const JoinGamePage = () => {
       const exists = players.some(
         (p) =>
           p.name.trim().toLowerCase() ===
-          (username || "Player").trim().toLowerCase()
+          (cleanUsername || "Player").trim().toLowerCase()
       );
 
       if (exists) {
@@ -45,11 +65,10 @@ const JoinGamePage = () => {
       }
 
       // 4. Add player to room
-      const playerId = await addPlayerToRoom(room.id, username || "Player");
+      const playerId = await addPlayerToRoom(room.id, cleanUsername || "Player");
 
       // 5. Navigate to character page
       const cleanUserId = String(playerId).trim();
-      const cleanGameId = String(gameId).trim();
       navigate(`/character?userId=${cleanUserId}&gameId=${cleanGameId}`);
 
     } catch (error) {

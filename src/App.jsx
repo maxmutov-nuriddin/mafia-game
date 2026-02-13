@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import StartGamePage from "./pages/global/StartGamePage";
 import CreateGamePage from "./pages/global/CreateGamePage";
 import JoinGamePage from "./pages/private/JoinGamePage";
+import AdminDashboardPage from "./pages/private/AdminDashboardPage";
 import CharacterGamePage from "./pages/private/СharacterGamePage";
 import GameStartPage from "./pages/global/GameStartPage";
 import NotFoundPage from "./pages/global/NotFoundPage";
@@ -361,6 +362,7 @@ function App() {
                 element={<CreateGamePage id={id} startGame={startGame} />}
               />
               <Route path="/join" element={<JoinGamePage />} />
+              <Route path="/dashboard" element={<AdminDashboardPage />} />
               <Route path="/character" element={<CharacterGamePage />} />
               <Route path="/gamestart/:id" element={<GameStartPage />} />
               <Route path="*" element={<NotFoundPage />} />

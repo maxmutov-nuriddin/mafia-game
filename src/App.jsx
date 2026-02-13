@@ -15,6 +15,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 import "./App.css";
 import Animated from "./pages/animated/Animated";
+import ProfileAuthWidget from "./components/ProfileAuthWidget";
 
 // ====== 🔥 Firebase Service Import
 import {
@@ -350,6 +351,7 @@ function App() {
           theme="light"
           transition={Slide}
         />
+        {animDesign && <ProfileAuthWidget />}
         {
           !animDesign ? (
             <Animated onFinish={() => setAnimDesign(true)} />

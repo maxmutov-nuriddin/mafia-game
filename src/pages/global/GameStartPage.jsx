@@ -2,7 +2,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import CharacterListCard from "../../components/CharactersListCard";
-import { LoaderCircle, Undo2, Eye } from 'lucide-react';
+import { LoaderCircle, Undo2, Eye, Check } from 'lucide-react';
 import { toast } from "react-toastify";
 import { getRoomByCustomId, listenToRoomPlayers, deleteRoom, deletePlayer } from "../../services/gameService";
 
@@ -232,7 +232,7 @@ const GameStartPage = () => {
           {/* Kick selected players button */}
           {selectedPlayers.length > 0 && (
             <button
-              className="border rounded-md text-xl font-bold px-3 py-2 w-60 md:w-80 bg-red-500 text-white hover:bg-red-600"
+              className={`border-2 border-[#250506] rounded-md text-xl font-bold px-3 py-2 w-60 md:w-80 transition-colors ${isStarting ? "opacity-50 cursor-not-allowed" : "bg-[#DBD0C0] text-[#250506] hover:bg-[#250506] hover:text-[#DBD0C0]"}`}
               onClick={kickSelectedPlayers}
               disabled={isStarting}
             >
@@ -241,30 +241,30 @@ const GameStartPage = () => {
           )}
         </div>
 
-        <div className="bg-[#DBD0C0] w-[100%] h-170 rounded-2xl overflow-auto grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 auto-cols-fr items-center justify-center gap-2">
+        <div className="bg-[#DBD0C0] w-[100%] h-170 rounded-2xl overflow-auto p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 auto-rows-[420px] gap-3 items-start justify-items-center content-start">
           {Array.isArray(games) && games.length > 0 ? (
-            games.map((character, index) => {
+            games.map((character) => {
               const isSelected = selectedPlayers.includes(character.id);
 
               return (
                 <div
-                  key={index}
+                  key={character.id}
                   onClick={() => togglePlayerSelection(character.id)}
-                  className={`h-full relative transition-all duration-300 cursor-pointer ${character.eliminated
+                  className={`w-full max-w-[280px] h-full self-start relative rounded-xl transition-all duration-200 cursor-pointer ${character.eliminated
                     ? 'opacity-40'
                     : isSelected
-                      ? 'opacity-100 ring-4 ring-red-500'
-                      : 'opacity-100 hover:opacity-70'
+                      ? 'opacity-100 ring-2 ring-[#250506] bg-[#efe4d3]'
+                      : 'opacity-100 hover:bg-[#efe4d3]'
                     }`}
                 >
-                  <button className="absolute right-7 top-6 z-10" onClick={(e) => { e.stopPropagation(); seeGamerName(character.name); }}>
+                  <button className="absolute right-6 top-5 z-10" onClick={(e) => { e.stopPropagation(); seeGamerName(character.name); }}>
                     <Eye />
                   </button>
 
                   {/* Selection indicator */}
                   {isSelected && (
-                    <div className="absolute top-2 left-2 z-10 bg-red-500 text-white px-2 py-1 rounded-full text-xs font-bold">
-                      ✓ Выбран
+                    <div className="absolute top-4 left-4 z-10 bg-[#250506] text-[#DBD0C0] w-7 h-7 rounded-full flex items-center justify-center shadow">
+                      <Check size={16} />
                     </div>
                   )}
 

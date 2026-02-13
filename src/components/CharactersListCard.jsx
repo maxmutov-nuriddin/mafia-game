@@ -1,12 +1,14 @@
 const CharacterListCard = ({ character, onDelete }) => {
-  // Handle case when character is not yet assigned
   if (!character) {
     return (
-      <div className="grid grid-cols-1 w-full h-full gap-4 p-5">
-        <div className="p-4 border rounded shadow text-center flex flex-col gap-2" id="card-bg-imgs">
+      <div className="w-full h-full p-2" onClick={onDelete}>
+        <div
+          className="w-full h-full p-4 border rounded shadow text-center flex flex-col gap-3"
+          id="card-bg-imgs"
+        >
           <h3 className="text-2xl font-black mt-1">Ожидание...</h3>
-          <p className="text-md font-bold">
-            <i>Персонаж ещё не назначен</i>
+          <p className="text-md font-bold mt-auto">
+            <i>Персонаж еще не назначен</i>
           </p>
         </div>
       </div>
@@ -14,10 +16,10 @@ const CharacterListCard = ({ character, onDelete }) => {
   }
 
   return (
-    <div onClick={onDelete} className="grid grid-cols-1 w-full h-full gap-4 p-5">
+    <div onClick={onDelete} className="w-full h-full p-2">
       <div
         key={character.id}
-        className="p-4 border rounded shadow text-center flex flex-col gap-2 h-full"
+        className="w-full h-full p-4 border rounded shadow text-center flex flex-col gap-3"
         id="card-bg-imgs"
       >
         <img
@@ -26,7 +28,7 @@ const CharacterListCard = ({ character, onDelete }) => {
           className="w-15 h-15 object-contain mx-auto"
         />
         <h3 className="text-2xl font-black mt-1">{character.name}</h3>
-        <p className="text-md font-bold flex-grow flex items-center justify-center">
+        <p className="text-md font-bold mt-auto">
           <i>{character.description}</i>
         </p>
       </div>

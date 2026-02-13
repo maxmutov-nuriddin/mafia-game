@@ -119,6 +119,13 @@ input::-webkit-inner-spin-button {
   border-radius: 1rem;
 }
 
+.mafia-role-card {
+  border: 1.5px solid var(--mafia-border);
+  border-radius: 0.9rem;
+  box-shadow: 0 2px 8px rgba(37, 5, 6, 0.14);
+  overflow: hidden;
+}
+
 .mafia-input {
   width: 100%;
   border: 1.5px solid var(--mafia-border);
@@ -222,4 +229,29 @@ input::-webkit-inner-spin-button {
   border-width: 1.5px;
   border-radius: 0.55rem;
   box-shadow: 0 1px 0 rgba(37, 5, 6, 0.18);
+}
+
+.mafia-eye-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1.5px solid rgba(37, 5, 6, 0.32);
+  border-radius: 0.65rem;
+  background: #f4ede1;
+  color: #250506;
+  box-shadow: 0 1px 0 rgba(37, 5, 6, 0.18);
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+}
+
+.mafia-eye-btn:hover:not(:disabled) {
+  background: #250506;
+  color: #f4ede1;
+  border-color: #250506;
+}
+
+.mafia-eye-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }

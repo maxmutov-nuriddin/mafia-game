@@ -4,7 +4,7 @@ const CharacterList = ({ character }) => {
     <div className="grid grid-cols-1 gap-4 p-2 sm:p-8">
       <div
         key={character.id}
-        className="mafia-panel p-4 text-center flex flex-col gap-2"
+        className="mafia-role-card p-4 text-center flex flex-col gap-2"
         id="card-bg-img"
       >
         <img

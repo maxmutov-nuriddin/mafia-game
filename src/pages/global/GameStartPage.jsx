@@ -2,7 +2,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import CharacterListCard from "../../components/CharactersListCard";
-import { Check, Eye, EyeOff, LoaderCircle, Undo2, UserRound } from "lucide-react";
+import { Check, Eye, EyeOff, LoaderCircle, Undo2, UserRound, Users } from "lucide-react";
 import { toast } from "react-toastify";
 import {
   deleteRoom,
@@ -194,6 +194,8 @@ const GameStartPage = () => {
     );
   }
 
+  const hasPlayers = Array.isArray(games) && games.length > 0;
+
   return (
     <>
       <div className="mafia-shell mx-5 rounded-3xl mt-5 overflow-hidden">
@@ -271,10 +273,16 @@ const GameStartPage = () => {
         </div>
 
         <div
-          className="mafia-panel w-full min-w-0 overflow-y-auto overflow-x-hidden p-3 grid auto-rows-[420px] gap-3 content-start"
-          style={{ gridTemplateColumns: "repeat(auto-fit, minmax(260px, 280px))", justifyContent: "center" }}
+          className={`mafia-panel w-full min-w-0 overflow-y-auto overflow-x-hidden p-3 ${
+            hasPlayers ? "grid auto-rows-[420px] gap-3 content-start" : "flex items-center justify-center"
+          }`}
+          style={
+            hasPlayers
+              ? { gridTemplateColumns: "repeat(auto-fit, minmax(260px, 280px))", justifyContent: "center" }
+              : undefined
+          }
         >
-          {Array.isArray(games) && games.length > 0 ? (
+          {hasPlayers ? (
             games.map((player) => {
               const isEliminated = !!player.eliminated;
               const isSelected = selectedPlayers.includes(player.id);
@@ -294,7 +302,7 @@ const GameStartPage = () => {
                   }`}
                 >
                   <button
-                    className={`mafia-btn mafia-btn--tiny mafia-btn--icon absolute right-6 top-5 z-20 ${isEliminated ? "opacity-50 cursor-not-allowed" : ""}`}
+                    className={`mafia-eye-btn absolute right-6 top-5 z-20 ${isEliminated ? "opacity-50 cursor-not-allowed" : ""}`}
                     onClick={(event) => {
                       event.stopPropagation();
                       toggleCardFlip(player.id, isEliminated);
@@ -333,7 +341,7 @@ const GameStartPage = () => {
                       >
                         <div
                           id="card-bg-imgs"
-                          className="w-full h-full border rounded shadow flex flex-col items-center justify-center px-4 text-center"
+                          className="mafia-role-card w-full h-full flex flex-col items-center justify-center px-4 text-center"
                         >
                           <p className="text-sm font-semibold opacity-70">Игрок</p>
                           <p className="mt-2 text-3xl font-black break-words">{playerName}</p>
@@ -357,7 +365,15 @@ const GameStartPage = () => {
               );
             })
           ) : (
-            <h2 className="font-black lg:text-3xl md:text-2xl text-xl">Нет персонажей</h2>
+            <div className="mafia-panel-strong max-w-[460px] w-full p-8 md:p-10 text-center flex flex-col items-center gap-4">
+              <div className="w-16 h-16 rounded-full border-2 border-[#250506]/20 bg-[#f4ede1] flex items-center justify-center">
+                <Users size={30} className="text-[#250506]/80" />
+              </div>
+              <h2 className="font-black text-3xl md:text-4xl leading-tight">Нет персонажей</h2>
+              <p className="text-sm md:text-base font-semibold opacity-75">
+                Комната пока пуста. Дождитесь подключения игроков.
+              </p>
+            </div>
           )}
         </div>
         </div>

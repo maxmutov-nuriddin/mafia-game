@@ -251,7 +251,7 @@ const GameStartPage = () => {
 
       <div className="mafia-shell my-4 mx-5 rounded-3xl p-4 text-[#250506]" id="global-page">
         <div className="grid grid-cols-1 lg:grid-cols-[320px_minmax(0,1fr)] gap-4 h-[70vh] lg:h-[calc(100vh-190px)] min-h-[360px]">
-        <div className="mafia-panel w-full flex flex-col items-center justify-center gap-5 px-4">
+        <div className="mafia-panel w-full flex flex-col items-center justify-center gap-5 px-4 py-4">
           <h1 className="text-4xl font-black">{formatTime(timeLeft)}</h1>
 
           <div className="w-full max-w-[270px] flex flex-col gap-3">

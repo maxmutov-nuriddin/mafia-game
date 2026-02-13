@@ -100,7 +100,7 @@ const CharacterGamePage = () => {
   const roleDescription = playerData?.character?.description?.trim() || "Описание роли пока недоступно.";
 
   return (
-    <div className="mafia-page flex justify-center items-start sm:items-center flex-col px-2 py-3" id="global-page">
+    <div className="mafia-page flex justify-center items-center sm:items-center flex-col px-2 py-3" id="global-page">
       <div className="mafia-shell relative w-full max-w-[300px] min-h-[400px] flex flex-col gap-4 p-4 sm:p-5">
         <div className="w-full flex items-center justify-between">
           <img src="/mafia-logo.png" className="w-18 h-18 object-contain" alt="Mafia" />

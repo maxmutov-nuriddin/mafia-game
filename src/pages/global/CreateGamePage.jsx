@@ -137,7 +137,7 @@ const CreateGamePage = ({ startGame }) => {
           className="mafia-btn mafia-btn--icon absolute top-5 right-5"
         >
           <Users size={16} />
-          Gamers: {users.length}
+          {users.length}
         </button>
 
         {showPlayers && (

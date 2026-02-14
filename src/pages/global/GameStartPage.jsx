@@ -317,7 +317,7 @@ const GameStartPage = () => {
               </div>
 
               <div className="mafia-panel-strong game-start-roles-card rounded-2xl p-3 flex flex-col gap-3 min-h-0">
-                <div className="game-card mafia-panel game-start-roles-list p-3 flex-1 min-h-0 overflow-y-auto">
+                <div className="game-card mafia-panel game-start-roles-list p-3 flex-1 min-h-0">
                   {characterStats.length > 0 ? (
                     <>
                       <div className="game-start-roles-head">

@@ -333,6 +333,7 @@ input::-webkit-inner-spin-button {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  overflow: hidden;
   background: linear-gradient(180deg, rgba(241, 231, 215, 0.92) 0%, rgba(233, 220, 201, 0.96) 100%);
   border-color: rgba(37, 5, 6, 0.2);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
@@ -421,7 +422,8 @@ input::-webkit-inner-spin-button {
   gap: 0.6rem;
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
+  min-width: 0;
+  overflow-y: scroll;
   overflow-x: hidden;
   align-content: flex-start;
   padding-right: 0.3rem;
@@ -452,6 +454,7 @@ input::-webkit-inner-spin-button {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
+  min-width: 0;
   max-width: 100%;
   border: 1px solid rgba(37, 5, 6, 0.26);
   background: linear-gradient(180deg, #ffffff 0%, #f4efe8 100%);
@@ -461,6 +464,8 @@ input::-webkit-inner-spin-button {
 }
 
 .game-start-role-chip-name {
+  min-width: 0;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

@@ -284,7 +284,7 @@ const GameStartPage = () => {
       <div className="mafia-shell my-4 mx-5 rounded-3xl p-4 text-[#250506]" id="global-page">
         <div className="grid grid-cols-1 lg:grid-cols-[320px_minmax(0,1fr)] gap-4 h-[70vh] lg:h-[calc(100vh-190px)] min-h-[360px]">
           <div className="mafia-panel game-start-sidebar w-full h-full p-3">
-            <div className="h-full grid grid-rows-2 gap-3">
+            <div className="h-full grid grid-rows-[1.12fr_0.88fr] gap-3">
               <div className="mafia-panel-strong game-start-timer-card rounded-2xl px-4 py-5 flex flex-col items-center justify-center text-center">
                 <p className="game-start-timer-label">Таймер</p>
                 <h1 className={`game-start-timer-value ${isTimerCritical ? "text-[#8f1d1f]" : ""}`}>
@@ -328,7 +328,7 @@ const GameStartPage = () => {
                         <div className="game-start-roles-badges">
                           <span className="game-start-roles-pill">
                             <strong>{characterStats.length}</strong>
-                            <small>уник.</small>
+                            <small>Ролей</small>
                           </span>
                           {showDuplicateSummary && (
                             <span className="game-start-roles-pill game-start-roles-pill--alert">

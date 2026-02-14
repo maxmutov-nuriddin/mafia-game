@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Chrome, Lock, LogOut, Mail, UserRound, X } from "lucide-react";
 import { toast } from "react-toastify";
 import {
@@ -10,6 +10,9 @@ import {
   subscribeAuthState,
 } from "../services/authService";
 
+const LANGUAGE_STORAGE_KEY = "mafia-ui-language";
+const LANGUAGE_OPTIONS = ["uz", "ru", "en"];
+
 const ProfileAuthWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [mode, setMode] = useState("login");
@@ -18,6 +21,13 @@ const ProfileAuthWidget = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [user, setUser] = useState(null);
+  const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
+  const [language, setLanguage] = useState(() => {
+    if (typeof window === "undefined") return "ru";
+    const savedLanguage = window.localStorage.getItem(LANGUAGE_STORAGE_KEY);
+    return LANGUAGE_OPTIONS.includes(savedLanguage) ? savedLanguage : "ru";
+  });
+  const langMenuRef = useRef(null);
 
   useEffect(() => {
     const unsubscribe = subscribeAuthState((nextUser) => {
@@ -25,6 +35,23 @@ const ProfileAuthWidget = () => {
     });
 
     return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
+    document.documentElement.setAttribute("lang", language);
+  }, [language]);
+
+  useEffect(() => {
+    const handlePointerDown = (event) => {
+      if (!langMenuRef.current?.contains(event.target)) {
+        setIsLangMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
   }, []);
 
   const hasAccountUser = !!user && !user.isAnonymous;
@@ -99,16 +126,56 @@ const ProfileAuthWidget = () => {
     }
   };
 
+  const handleLanguageChange = (nextLanguage) => {
+    setLanguage(nextLanguage);
+    setIsLangMenuOpen(false);
+  };
+
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setIsOpen(true)}
-        className="mafia-btn mafia-btn--icon fixed top-3 right-3 z-[120]"
-      >
-        <UserRound size={16} />
-        <span className="max-w-[120px] truncate">{profileLabel}</span>
-      </button>
+      <div className="fixed top-3 right-3 z-[120] flex items-center gap-2">
+        <div className="relative" ref={langMenuRef}>
+          <button
+            type="button"
+            onClick={() => setIsLangMenuOpen((prev) => !prev)}
+            className="mafia-btn mafia-btn--icon !rounded-xl !px-3 !py-2 uppercase"
+            aria-haspopup="menu"
+            aria-expanded={isLangMenuOpen}
+            aria-label="Language switcher"
+          >
+            {language}
+          </button>
+
+          {isLangMenuOpen && (
+            <div className="mafia-panel absolute right-0 mt-1 p-1.5 min-w-[64px] flex flex-col gap-1">
+              {LANGUAGE_OPTIONS.map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => handleLanguageChange(option)}
+                  className={`mafia-btn mafia-btn--tiny uppercase ${
+                    language === option ? "mafia-btn--primary" : ""
+                  }`}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            setIsLangMenuOpen(false);
+            setIsOpen(true);
+          }}
+          className="mafia-btn mafia-btn--icon"
+        >
+          <UserRound size={16} />
+          <span className="max-w-[120px] truncate">{profileLabel}</span>
+        </button>
+      </div>
 
       {isOpen && (
         <>

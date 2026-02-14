@@ -32,6 +32,36 @@ const GameStartPage = () => {
   const gameIdRef = useRef(null);
 
   const activePlayers = useMemo(() => games.filter((player) => !player.eliminated), [games]);
+  const characterStats = useMemo(() => {
+    const statsMap = new Map();
+
+    activePlayers
+      .map((player) => player.character)
+      .filter(Boolean)
+      .forEach((character) => {
+        const key =
+          typeof character === "object"
+            ? String(character.id || character.name || "")
+            : String(character);
+
+        if (!key) return;
+
+        const name = typeof character === "string" ? character : character.name || "Без названия";
+        const existing = statsMap.get(key);
+
+        if (existing) {
+          existing.count += 1;
+        } else {
+          statsMap.set(key, { id: key, name, count: 1 });
+        }
+      });
+
+    return Array.from(statsMap.values()).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, "ru"));
+  }, [activePlayers]);
+  const duplicateCharactersCount = useMemo(
+    () => characterStats.reduce((acc, character) => acc + Math.max(character.count - 1, 0), 0),
+    [characterStats]
+  );
 
   const togglePlayerSelection = (playerId, isEliminated) => {
     if (isEliminated) return;
@@ -198,6 +228,8 @@ const GameStartPage = () => {
   }
 
   const hasPlayers = Array.isArray(games) && games.length > 0;
+  const isTimerCritical = timeLeft <= 60;
+  const showDuplicateSummary = duplicateCharactersCount > 1;
 
   return (
     <>
@@ -251,134 +283,187 @@ const GameStartPage = () => {
 
       <div className="mafia-shell my-4 mx-5 rounded-3xl p-4 text-[#250506]" id="global-page">
         <div className="grid grid-cols-1 lg:grid-cols-[320px_minmax(0,1fr)] gap-4 h-[70vh] lg:h-[calc(100vh-190px)] min-h-[360px]">
-        <div className="mafia-panel w-full flex flex-col items-center justify-center gap-5 px-4 py-4">
-          <h1 className="text-4xl font-black">{formatTime(timeLeft)}</h1>
+          <div className="mafia-panel game-start-sidebar w-full h-full p-3">
+            <div className="h-full grid grid-rows-2 gap-3">
+              <div className="mafia-panel-strong game-start-timer-card rounded-2xl px-4 py-5 flex flex-col items-center justify-center text-center">
+                <p className="game-start-timer-label">Таймер</p>
+                <h1 className={`game-start-timer-value ${isTimerCritical ? "text-[#8f1d1f]" : ""}`}>
+                  {formatTime(timeLeft)}
+                </h1>
+                <div className="game-start-meta">
+                  <span>{activePlayers.length} игроков</span>
+                  <span>{characterStats.length} ролей</span>
+                  {showDuplicateSummary && <span>{duplicateCharactersCount} повторов</span>}
+                </div>
+                <div className="w-full max-w-[270px] mx-auto flex flex-col gap-3 mt-3">
+                  <button className="mafia-btn" onClick={closeRoom} disabled={isStarting}>
+                    {isStarting ? "Комната закрывается..." : "Закрыть комнату"}
+                  </button>
 
-          <div className="w-full max-w-[270px] flex flex-col gap-3">
-            <button className="mafia-btn" onClick={closeRoom} disabled={isStarting}>
-              {isStarting ? "Комната закрывается..." : "Закрыть комнату"}
-            </button>
+                  <button className="mafia-btn" onClick={startTimer}>
+                    Продлить комнату
+                  </button>
 
-            <button className="mafia-btn" onClick={startTimer}>
-              Продлить комнату
-            </button>
+                  {selectedPlayers.length > 0 && (
+                    <button
+                      className="mafia-btn mafia-btn--primary"
+                      onClick={eliminateSelectedPlayers}
+                      disabled={isStarting}
+                    >
+                      {isStarting ? "Отмечаем выбывших..." : `Выбить выбранных (${selectedPlayers.length})`}
+                    </button>
+                  )}
+                </div>
+              </div>
 
-            {selectedPlayers.length > 0 && (
-              <button
-                className="mafia-btn mafia-btn--primary"
-                onClick={eliminateSelectedPlayers}
-                disabled={isStarting}
-              >
-                {isStarting ? "Отмечаем выбывших..." : `Выбить выбранных (${selectedPlayers.length})`}
-              </button>
-            )}
+              <div className="mafia-panel-strong game-start-roles-card rounded-2xl p-3 flex flex-col gap-3 min-h-0">
+                <div className="game-card mafia-panel game-start-roles-list p-3 flex-1 min-h-0 overflow-y-auto">
+                  {characterStats.length > 0 ? (
+                    <>
+                      <div className="game-start-roles-head">
+                        <div className="game-start-roles-title-wrap">
+                          <p className="game-start-roles-kicker">Роли</p>
+                          <p className="game-start-roles-title">Персонажи в игре</p>
+                        </div>
+                        <div className="game-start-roles-badges">
+                          <span className="game-start-roles-pill">
+                            <strong>{characterStats.length}</strong>
+                            <small>уник.</small>
+                          </span>
+                          {showDuplicateSummary && (
+                            <span className="game-start-roles-pill game-start-roles-pill--alert">
+                              <strong>+{duplicateCharactersCount}</strong>
+                              <small>повт.</small>
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="game-start-roles-grid">
+                        {characterStats.map((character) => (
+                          <span
+                            key={character.id}
+                            className="game-start-role-chip inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold"
+                          >
+                            <span className="game-start-role-chip-name">{character.name}</span>
+                            {character.count > 1 && (
+                              <span className="game-start-role-chip-count">x{character.count}</span>
+                            )}
+                          </span>
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="game-start-roles-empty h-full flex items-center justify-center text-center text-xs font-semibold">
+                      Персонажи пока не назначены
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
 
-        <div
-          className={`mafia-panel w-full min-w-0 overflow-y-auto overflow-x-hidden p-3 ${
-            hasPlayers ? "grid auto-rows-[420px] gap-3 content-start" : "flex items-center justify-center"
-          }`}
-          style={
-            hasPlayers
-              ? { gridTemplateColumns: "repeat(auto-fit, minmax(260px, 280px))", justifyContent: "center" }
-              : undefined
-          }
-        >
-          {hasPlayers ? (
-            games.map((player) => {
-              const isEliminated = !!player.eliminated;
-              const isSelected = selectedPlayers.includes(player.id);
-              const isFlipped = isEliminated || !!flippedPlayers[player.id];
-              const playerName = player.name || "Игрок";
+          <div
+            className={`mafia-panel w-full min-w-0 overflow-y-auto overflow-x-hidden p-3 ${hasPlayers ? "grid auto-rows-[420px] gap-3 content-start" : "flex items-center justify-center"
+              }`}
+            style={
+              hasPlayers
+                ? { gridTemplateColumns: "repeat(auto-fit, minmax(260px, 280px))", justifyContent: "center" }
+                : undefined
+            }
+          >
+            {hasPlayers ? (
+              games.map((player) => {
+                const isEliminated = !!player.eliminated;
+                const isSelected = selectedPlayers.includes(player.id);
+                const isFlipped = isEliminated || !!flippedPlayers[player.id];
+                const playerName = player.name || "Игрок";
 
-              return (
-                <div
-                  key={player.id}
-                  onClick={() => togglePlayerSelection(player.id, isEliminated)}
-                  className={`w-[280px] h-[420px] self-start relative rounded-xl transition-all duration-200 cursor-pointer ${
-                    isEliminated
+                return (
+                  <div
+                    key={player.id}
+                    onClick={() => togglePlayerSelection(player.id, isEliminated)}
+                    className={`w-[280px] h-[420px] self-start relative rounded-xl transition-all duration-200 cursor-pointer ${isEliminated
                       ? "opacity-50"
                       : isSelected
                         ? "opacity-100 ring-2 ring-[#250506] bg-[#efe4d3]"
                         : "opacity-100 hover:bg-[#efe4d3]"
-                  }`}
-                >
-                  <button
-                    className={`mafia-eye-btn absolute right-6 top-5 z-20 ${isEliminated ? "opacity-50 cursor-not-allowed" : ""}`}
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      toggleCardFlip(player.id, isEliminated);
-                    }}
-                    disabled={isEliminated}
+                      }`}
                   >
-                    {isFlipped ? <EyeOff /> : <Eye />}
-                  </button>
-
-                  {isSelected && (
-                    <div className="absolute top-4 left-4 z-10 bg-[#250506] text-[#DBD0C0] w-7 h-7 rounded-full flex items-center justify-center shadow">
-                      <Check size={16} />
-                    </div>
-                  )}
-
-                  {isEliminated && (
-                    <div className="absolute top-4 left-4 z-10 bg-red-600 text-white px-2 py-1 rounded-full text-xs font-bold">
-                      Выбыл
-                    </div>
-                  )}
-
-                  <div className="relative h-full w-full p-2" style={{ perspective: "1200px" }}>
-                    <div
-                      className="relative h-full w-full transition-transform duration-500"
-                      style={{
-                        transformStyle: "preserve-3d",
-                        transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
+                    <button
+                      className={`mafia-eye-btn absolute right-6 top-5 z-20 ${isEliminated ? "opacity-50 cursor-not-allowed" : ""}`}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        toggleCardFlip(player.id, isEliminated);
                       }}
+                      disabled={isEliminated}
                     >
+                      {isFlipped ? <EyeOff /> : <Eye />}
+                    </button>
+
+                    {isSelected && (
+                      <div className="absolute top-4 left-4 z-10 bg-[#250506] text-[#DBD0C0] w-7 h-7 rounded-full flex items-center justify-center shadow">
+                        <Check size={16} />
+                      </div>
+                    )}
+
+                    {isEliminated && (
+                      <div className="absolute top-4 left-4 z-10 bg-red-600 text-white px-2 py-1 rounded-full text-xs font-bold">
+                        Выбыл
+                      </div>
+                    )}
+
+                    <div className="relative h-full w-full p-2" style={{ perspective: "1200px" }}>
                       <div
-                        className="absolute inset-0"
+                        className="relative h-full w-full transition-transform duration-500"
                         style={{
-                          backfaceVisibility: "hidden",
-                          WebkitBackfaceVisibility: "hidden",
+                          transformStyle: "preserve-3d",
+                          transform: isFlipped ? "rotateY(180deg)" : "rotateY(0deg)",
                         }}
                       >
                         <div
-                          id="card-bg-imgs"
-                          className="mafia-role-card w-full h-full flex flex-col items-center justify-center px-4 text-center"
+                          className="absolute inset-0"
+                          style={{
+                            backfaceVisibility: "hidden",
+                            WebkitBackfaceVisibility: "hidden",
+                          }}
                         >
-                          <p className="text-sm font-semibold opacity-70">Игрок</p>
-                          <p className="mt-2 text-3xl font-black break-words">{playerName}</p>
-                          <p className="mt-4 text-xs font-semibold opacity-80">Нажмите глаз, чтобы увидеть роль</p>
+                          <div
+                            id="card-bg-imgs"
+                            className="mafia-role-card w-full h-full flex flex-col items-center justify-center px-4 text-center"
+                          >
+                            <p className="text-sm font-semibold opacity-70">Игрок</p>
+                            <p className="mt-2 text-3xl font-black break-words">{playerName}</p>
+                            <p className="mt-4 text-xs font-semibold opacity-80">Нажмите глаз, чтобы увидеть роль</p>
+                          </div>
                         </div>
-                      </div>
 
-                      <div
-                        className="absolute inset-0"
-                        style={{
-                          transform: "rotateY(180deg)",
-                          backfaceVisibility: "hidden",
-                          WebkitBackfaceVisibility: "hidden",
-                        }}
-                      >
-                        <CharacterListCard character={player.character} onDelete={() => {}} />
+                        <div
+                          className="absolute inset-0"
+                          style={{
+                            transform: "rotateY(180deg)",
+                            backfaceVisibility: "hidden",
+                            WebkitBackfaceVisibility: "hidden",
+                          }}
+                        >
+                          <CharacterListCard character={player.character} onDelete={() => { }} />
+                        </div>
                       </div>
                     </div>
                   </div>
+                );
+              })
+            ) : (
+              <div className="mafia-panel-strong max-w-[460px] w-full p-8 md:p-10 text-center flex flex-col items-center gap-4">
+                <div className="w-16 h-16 rounded-full border-2 border-[#250506]/20 bg-[#f4ede1] flex items-center justify-center">
+                  <Users size={30} className="text-[#250506]/80" />
                 </div>
-              );
-            })
-          ) : (
-            <div className="mafia-panel-strong max-w-[460px] w-full p-8 md:p-10 text-center flex flex-col items-center gap-4">
-              <div className="w-16 h-16 rounded-full border-2 border-[#250506]/20 bg-[#f4ede1] flex items-center justify-center">
-                <Users size={30} className="text-[#250506]/80" />
+                <h2 className="font-black text-3xl md:text-4xl leading-tight">Нет персонажей</h2>
+                <p className="text-sm md:text-base font-semibold opacity-75">
+                  Комната пока пуста. Дождитесь подключения игроков.
+                </p>
               </div>
-              <h2 className="font-black text-3xl md:text-4xl leading-tight">Нет персонажей</h2>
-              <p className="text-sm md:text-base font-semibold opacity-75">
-                Комната пока пуста. Дождитесь подключения игроков.
-              </p>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
         </div>
       </div>
     </>

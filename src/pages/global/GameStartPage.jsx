@@ -1,4 +1,5 @@
-﻿/* eslint-disable react-hooks/exhaustive-deps */
+﻿/* eslint-disable no-unused-vars */
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import CharacterListCard from "../../components/CharactersListCard";
@@ -293,7 +294,6 @@ const GameStartPage = () => {
                 <div className="game-start-meta">
                   <span>{activePlayers.length} игроков</span>
                   <span>{characterStats.length} ролей</span>
-                  {showDuplicateSummary && <span>{duplicateCharactersCount} повторов</span>}
                 </div>
                 <div className="w-full max-w-[270px] mx-auto flex flex-col gap-3 mt-3">
                   <button className="mafia-btn" onClick={closeRoom} disabled={isStarting}>
@@ -330,12 +330,6 @@ const GameStartPage = () => {
                             <strong>{characterStats.length}</strong>
                             <small>Ролей</small>
                           </span>
-                          {showDuplicateSummary && (
-                            <span className="game-start-roles-pill game-start-roles-pill--alert">
-                              <strong>+{duplicateCharactersCount}</strong>
-                              <small>повт.</small>
-                            </span>
-                          )}
                         </div>
                       </div>
                       <div className="game-start-roles-grid">

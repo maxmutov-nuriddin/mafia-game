@@ -43,64 +43,20 @@ function generateUnique6DigitNumber(existingIds) {
   return id;
 }
 
-// Asosiy rollar qoidasi
-function getMainRoleNames(count) {
+// Base standard-mode lineup by player count (role ids from services/data.js)
+function getMainRoleIds(count) {
   if (count >= 5 && count <= 6) {
-    return ["РњР°С„РёСЏ", "Р”РѕРєС‚РѕСЂ", "РљРѕРјРёСЃСЃР°СЂ"];
+    return [1, 5, 4];
   } else if (count >= 7 && count <= 8) {
-    return ["РњР°С„РёСЏ", "РњР°С„РёСЏ", "Р”РѕРєС‚РѕСЂ", "РљРѕРјРёСЃСЃР°СЂ", "РљСЂР°СЃРѕС‚РєР° (РџСѓС‚Р°РЅР°)"];
+    return [1, 1, 5, 4, 8];
   } else if (count >= 9 && count <= 10) {
-    return [
-      "Р”РѕРЅ",
-      "РњР°С„РёСЏ",
-      "РњР°С„РёСЏ",
-      "Р”РѕРєС‚РѕСЂ",
-      "РљРѕРјРёСЃСЃР°СЂ",
-      "РљСЂР°СЃРѕС‚РєР° (РџСѓС‚Р°РЅР°)",
-      "РџСЃРёС…РѕР»РѕРі",
-    ];
+    return [2, 1, 1, 5, 4, 8, 7];
   } else if (count >= 11 && count <= 12) {
-    return [
-      "Р”РѕРЅ",
-      "РњР°С„РёСЏ",
-      "РњР°С„РёСЏ",
-      "РђРґРІРѕРєР°С‚ РјР°С„РёРё",
-      "Р”РѕРєС‚РѕСЂ",
-      "РљРѕРјРёСЃСЃР°СЂ",
-      "РљСЂР°СЃРѕС‚РєР° (РџСѓС‚Р°РЅР°)",
-      "РЎРЅР°Р№РїРµСЂ",
-      "РџСЃРёС…РѕР»РѕРі",
-    ];
+    return [2, 1, 1, 3, 5, 4, 8, 9, 7];
   } else if (count >= 13 && count <= 14) {
-    return [
-      "Р”РѕРЅ",
-      "РњР°С„РёСЏ",
-      "РњР°С„РёСЏ",
-      "РђРґРІРѕРєР°С‚ РјР°С„РёРё",
-      "Р”РѕРєС‚РѕСЂ",
-      "РљРѕРјРёСЃСЃР°СЂ",
-      "РљСЂР°СЃРѕС‚РєР° (РџСѓС‚Р°РЅР°)",
-      "РЎРЅР°Р№РїРµСЂ",
-      "РџСЃРёС…РѕР»РѕРі",
-      "РњР°РЅСЊСЏРє",
-      "РљСѓРїРёРґРѕРЅ",
-    ];
+    return [2, 1, 1, 3, 5, 4, 8, 9, 7, 13, 14];
   } else if (count >= 15) {
-    return [
-      "Р”РѕРЅ",
-      "РњР°С„РёСЏ",
-      "РњР°С„РёСЏ",
-      "РђРґРІРѕРєР°С‚ РјР°С„РёРё",
-      "Р”РѕРєС‚РѕСЂ",
-      "РљРѕРјРёСЃСЃР°СЂ",
-      "РљСЂР°СЃРѕС‚РєР° (РџСѓС‚Р°РЅР°)",
-      "РЎРЅР°Р№РїРµСЂ",
-      "РџСЃРёС…РѕР»РѕРі",
-      "РњР°РЅСЊСЏРє",
-      "РљСѓРїРёРґРѕРЅ",
-      "Р–СѓСЂРЅР°Р»РёСЃС‚",
-      "Р‘РµСЃСЃРјРµСЂС‚РЅС‹Р№",
-    ];
+    return [2, 1, 1, 3, 5, 4, 8, 9, 7, 13, 14, 10, 17];
   }
   return [];
 }
@@ -352,9 +308,9 @@ function App() {
       if (normalizedSelectedCharacters.length > 0) {
         rolesPool = normalizedSelectedCharacters.map((character) => ({ ...character }));
       } else {
-        const mainRoleNames = getMainRoleNames(players.length);
-        rolesPool = mainRoleNames
-          .map((roleName) => shuffled.find((character) => character.name === roleName))
+        const mainRoleIds = getMainRoleIds(players.length);
+        rolesPool = mainRoleIds
+          .map((roleId) => shuffled.find((character) => Number(character.id) === roleId))
           .filter(Boolean);
       }
 

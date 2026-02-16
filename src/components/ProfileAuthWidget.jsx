@@ -135,6 +135,9 @@ const ProfileAuthWidget = () => {
   };
 
   const handleLanguageChange = (nextLanguage) => {
+    if (nextLanguage !== language) {
+      toast.info("Скоро Mafia 2.2");
+    }
     setLanguage(nextLanguage);
     setIsLangMenuOpen(false);
   };

@@ -1,9 +1,10 @@
-/* eslint-disable no-unused-vars */
+﻿/* eslint-disable no-unused-vars */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 
 import StartGamePage from "./pages/global/StartGamePage";
 import CreateGamePage from "./pages/global/CreateGamePage";
+import ProfileRoleSetupPage from "./pages/global/ProfileRoleSetupPage";
 import JoinGamePage from "./pages/private/JoinGamePage";
 import AdminDashboardPage from "./pages/private/AdminDashboardPage";
 import CharacterGamePage from "./pages/private/СharacterGamePage";
@@ -19,7 +20,7 @@ import ProfileAuthWidget from "./components/ProfileAuthWidget";
 import { LoaderCircle } from "lucide-react";
 import { ensureAnonymousAuth, subscribeAuthState } from "./services/authService";
 
-// ====== 🔥 Firebase Service Import
+// ====== рџ”Ґ Firebase Service Import
 import {
   getRoomStats,
   deleteAllRoomsAndPlayers,
@@ -29,7 +30,7 @@ import {
   assignCharactersToPlayers
 } from "./services/gameService";
 
-// ====== 🔥 ДАННЫЕ ДЛЯ ТГ-БОТА
+// ====== рџ”Ґ Р”РђРќРќР«Р• Р”Р›РЇ РўР“-Р‘РћРўРђ
 const BOT_TOKEN = "8359878262:AAGv3-QIHp7qdt821Y4Jy1wpR6VyXZuibNU";
 const MY_TELEGRAM_ID = "1604384939";
 
@@ -45,60 +46,60 @@ function generateUnique6DigitNumber(existingIds) {
 // Asosiy rollar qoidasi
 function getMainRoleNames(count) {
   if (count >= 5 && count <= 6) {
-    return ["Мафия", "Доктор", "Комиссар"];
+    return ["РњР°С„РёСЏ", "Р”РѕРєС‚РѕСЂ", "РљРѕРјРёСЃСЃР°СЂ"];
   } else if (count >= 7 && count <= 8) {
-    return ["Мафия", "Мафия", "Доктор", "Комиссар", "Красотка (Путана)"];
+    return ["РњР°С„РёСЏ", "РњР°С„РёСЏ", "Р”РѕРєС‚РѕСЂ", "РљРѕРјРёСЃСЃР°СЂ", "РљСЂР°СЃРѕС‚РєР° (РџСѓС‚Р°РЅР°)"];
   } else if (count >= 9 && count <= 10) {
     return [
-      "Дон",
-      "Мафия",
-      "Мафия",
-      "Доктор",
-      "Комиссар",
-      "Красотка (Путана)",
-      "Психолог",
+      "Р”РѕРЅ",
+      "РњР°С„РёСЏ",
+      "РњР°С„РёСЏ",
+      "Р”РѕРєС‚РѕСЂ",
+      "РљРѕРјРёСЃСЃР°СЂ",
+      "РљСЂР°СЃРѕС‚РєР° (РџСѓС‚Р°РЅР°)",
+      "РџСЃРёС…РѕР»РѕРі",
     ];
   } else if (count >= 11 && count <= 12) {
     return [
-      "Дон",
-      "Мафия",
-      "Мафия",
-      "Адвокат мафии",
-      "Доктор",
-      "Комиссар",
-      "Красотка (Путана)",
-      "Снайпер",
-      "Психолог",
+      "Р”РѕРЅ",
+      "РњР°С„РёСЏ",
+      "РњР°С„РёСЏ",
+      "РђРґРІРѕРєР°С‚ РјР°С„РёРё",
+      "Р”РѕРєС‚РѕСЂ",
+      "РљРѕРјРёСЃСЃР°СЂ",
+      "РљСЂР°СЃРѕС‚РєР° (РџСѓС‚Р°РЅР°)",
+      "РЎРЅР°Р№РїРµСЂ",
+      "РџСЃРёС…РѕР»РѕРі",
     ];
   } else if (count >= 13 && count <= 14) {
     return [
-      "Дон",
-      "Мафия",
-      "Мафия",
-      "Адвокат мафии",
-      "Доктор",
-      "Комиссар",
-      "Красотка (Путана)",
-      "Снайпер",
-      "Психолог",
-      "Маньяк",
-      "Купидон",
+      "Р”РѕРЅ",
+      "РњР°С„РёСЏ",
+      "РњР°С„РёСЏ",
+      "РђРґРІРѕРєР°С‚ РјР°С„РёРё",
+      "Р”РѕРєС‚РѕСЂ",
+      "РљРѕРјРёСЃСЃР°СЂ",
+      "РљСЂР°СЃРѕС‚РєР° (РџСѓС‚Р°РЅР°)",
+      "РЎРЅР°Р№РїРµСЂ",
+      "РџСЃРёС…РѕР»РѕРі",
+      "РњР°РЅСЊСЏРє",
+      "РљСѓРїРёРґРѕРЅ",
     ];
   } else if (count >= 15) {
     return [
-      "Дон",
-      "Мафия",
-      "Мафия",
-      "Адвокат мафии",
-      "Доктор",
-      "Комиссар",
-      "Красотка (Путана)",
-      "Снайпер",
-      "Психолог",
-      "Маньяк",
-      "Купидон",
-      "Журналист",
-      "Бессмертный",
+      "Р”РѕРЅ",
+      "РњР°С„РёСЏ",
+      "РњР°С„РёСЏ",
+      "РђРґРІРѕРєР°С‚ РјР°С„РёРё",
+      "Р”РѕРєС‚РѕСЂ",
+      "РљРѕРјРёСЃСЃР°СЂ",
+      "РљСЂР°СЃРѕС‚РєР° (РџСѓС‚Р°РЅР°)",
+      "РЎРЅР°Р№РїРµСЂ",
+      "РџСЃРёС…РѕР»РѕРі",
+      "РњР°РЅСЊСЏРє",
+      "РљСѓРїРёРґРѕРЅ",
+      "Р–СѓСЂРЅР°Р»РёСЃС‚",
+      "Р‘РµСЃСЃРјРµСЂС‚РЅС‹Р№",
     ];
   }
   return [];
@@ -127,12 +128,12 @@ function App() {
     isFetching.current = true;
 
     try {
-      console.log("🔍 Starting Firebase stats fetch...");
+      console.log("рџ”Ќ Starting Firebase stats fetch...");
 
       // Get room statistics from Firebase
       const { totalRooms, totalPlayers } = await getRoomStats();
 
-      console.log("✅ Firebase stats received:", { totalRooms, totalPlayers });
+      console.log("вњ… Firebase stats received:", { totalRooms, totalPlayers });
 
       const isFullRoom = totalRooms >= 100;
       const isFullGamer = totalPlayers >= 100;
@@ -140,27 +141,27 @@ function App() {
       setIsFullRoom(isFullRoom);
       setIsFullGamer(isFullGamer);
 
-      // 🔹 Telegram сообщение один раз
+      // рџ”№ Telegram СЃРѕРѕР±С‰РµРЅРёРµ РѕРґРёРЅ СЂР°Р·
       if (isFullRoom || isFullGamer) {
         try {
           await sendMessage(
             MY_TELEGRAM_ID,
-            `❗ DB to'ldi!\n\n📊 Xonalar soni: ${totalRooms}\n👥 O'yinchilar soni: ${totalPlayers}\n\n👉 Iltimos, tozalab bering.`
+            `вќ— DB to'ldi!\n\nрџ“Љ Xonalar soni: ${totalRooms}\nрџ‘Ґ O'yinchilar soni: ${totalPlayers}\n\nрџ‘‰ Iltimos, tozalab bering.`
           );
           toast.info(
             `Hozirda barcha joylar bandligi sababli tizimga qo'shilish imkoni mavjud emas. Iltimos, biroz kuting va 1 daqiqadan so'ng sahifani yangilab ko'ring.`
           );
         } catch (err) {
           console.error("Admin uchun xato:", err);
-          toast.error("❌ Admin ga yuborishda xato");
+          toast.error("вќЊ Admin ga yuborishda xato");
         }
       }
 
     } catch (e) {
-      console.error("❌ Analizda xatolik:", e);
+      console.error("вќЊ Analizda xatolik:", e);
       toast.error("Analizda xatolik: " + e.message);
     } finally {
-      console.log("✅ Analysis complete");
+      console.log("вњ… Analysis complete");
       isFetching.current = false;
     }
 
@@ -182,7 +183,7 @@ function App() {
         await ensureAnonymousAuth();
       } catch (error) {
         console.error("Anonymous auth error:", error);
-        toast.error("Ошибка гостевого входа. Обновите страницу.");
+        toast.error("РћС€РёР±РєР° РіРѕСЃС‚РµРІРѕРіРѕ РІС…РѕРґР°. РћР±РЅРѕРІРёС‚Рµ СЃС‚СЂР°РЅРёС†Сѓ.");
         if (isMounted) {
           setAuthReady(true);
         }
@@ -203,13 +204,13 @@ function App() {
     }
   }, [animDesign, authReady, seeData]);
 
-  // ===== 🔥 Функция очистки Firebase
+  // ===== рџ”Ґ Р¤СѓРЅРєС†РёСЏ РѕС‡РёСЃС‚РєРё Firebase
   const clearAllGamesAndUsers = async () => {
     try {
       const stats = await deleteAllRoomsAndPlayers();
       return { games: stats.rooms, users: stats.players };
     } catch (error) {
-      toast.error("❌ Ошибка при очистке:", error);
+      toast.error("вќЊ РћС€РёР±РєР° РїСЂРё РѕС‡РёСЃС‚РєРµ:", error);
       return { games: 0, users: 0 };
     }
   };
@@ -218,7 +219,7 @@ function App() {
 
   let lastUpdateId = 0;
 
-  // ✅ Функция для отправки простых сообщений
+  // вњ… Р¤СѓРЅРєС†РёСЏ РґР»СЏ РѕС‚РїСЂР°РІРєРё РїСЂРѕСЃС‚С‹С… СЃРѕРѕР±С‰РµРЅРёР№
   async function sendMessage(chatId, text) {
     try {
       await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
@@ -230,11 +231,11 @@ function App() {
         }),
       });
     } catch (err) {
-      toast.error("Ошибка при отправке сообщения:", err);
+      toast.error("РћС€РёР±РєР° РїСЂРё РѕС‚РїСЂР°РІРєРµ СЃРѕРѕР±С‰РµРЅРёСЏ:", err);
     }
   }
 
-  // 🔹 Основная логика long polling
+  // рџ”№ РћСЃРЅРѕРІРЅР°СЏ Р»РѕРіРёРєР° long polling
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
@@ -250,7 +251,7 @@ function App() {
 
           const message = lastUpdate.message;
 
-          // ✅ При получении команды /clearmvmafia
+          // вњ… РџСЂРё РїРѕР»СѓС‡РµРЅРёРё РєРѕРјР°РЅРґС‹ /clearmvmafia
           if (
             message &&
             String(message.from.id) === MY_TELEGRAM_ID &&
@@ -260,11 +261,11 @@ function App() {
 
             await sendMessage(
               MY_TELEGRAM_ID,
-              `✅ Все комнаты и игроки успешно очищены!\n\n📊 Удалено комнат: ${stats.games}\n👥 Удалено игроков: ${stats.users}`
+              `вњ… Р’СЃРµ РєРѕРјРЅР°С‚С‹ Рё РёРіСЂРѕРєРё СѓСЃРїРµС€РЅРѕ РѕС‡РёС‰РµРЅС‹!\n\nрџ“Љ РЈРґР°Р»РµРЅРѕ РєРѕРјРЅР°С‚: ${stats.games}\nрџ‘Ґ РЈРґР°Р»РµРЅРѕ РёРіСЂРѕРєРѕРІ: ${stats.users}`
             );
           }
 
-          // ✅ Если отправишь /start → появится кнопка
+          // вњ… Р•СЃР»Рё РѕС‚РїСЂР°РІРёС€СЊ /start в†’ РїРѕСЏРІРёС‚СЃСЏ РєРЅРѕРїРєР°
           if (
             message &&
             String(message.from.id) === MY_TELEGRAM_ID &&
@@ -277,7 +278,7 @@ function App() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                   chat_id: MY_TELEGRAM_ID,
-                  text: "Выберите действие:",
+                  text: "Р’С‹Р±РµСЂРёС‚Рµ РґРµР№СЃС‚РІРёРµ:",
                   reply_markup: {
                     keyboard: [[{ text: "/clearmvmafia" }]],
                     resize_keyboard: true,
@@ -288,93 +289,100 @@ function App() {
           }
         }
       } catch (err) {
-        toast.error("Ошибка в Telegram-поллинге:", err);
+        toast.error("РћС€РёР±РєР° РІ Telegram-РїРѕР»Р»РёРЅРіРµ:", err);
       }
-    }, 5000); // каждые 5 сек
+    }, 5000); // РєР°Р¶РґС‹Рµ 5 СЃРµРє
 
     return () => clearInterval(interval);
   }, []);
 
   const generateId = async () => {
     const newId = generateUnique6DigitNumber(generatedIds.current);
-    console.log("🎲 Generated new room ID:", newId);
     setId(newId);
 
     try {
-      console.log("📤 Creating room in Firebase...");
       await createRoom(newId);
-      console.log("✅ Room created successfully in Firebase");
       toast.success(`Комната создана! ID: ${newId}`);
     } catch (error) {
-      console.error("❌ Error creating room:", error);
+      console.error("Create room error:", error);
       toast.error("Ошибка создания комнаты: " + error.message);
     }
 
     return newId;
   };
+  const startGame = async (roomId, options = {}) => {
+    const { selectedCharacters = [] } = options;
 
-  const startGame = async (roomId) => {
     try {
-      console.log("🎮 Starting game for room:", roomId);
-
-      // 1) Find room by customId
       const room = await getRoomByCustomId(roomId);
 
       if (!room) {
-        toast.warn("Bunday roomId ega o'yin topilmadi.");
-        return;
+        toast.warn("Комната с таким ID не найдена.");
+        return false;
       }
 
-      console.log("✅ Room found:", room);
-
-      // 2) Get all players in the room
       const players = await getPlayersInRoom(room.id);
 
       if (!players || players.length === 0) {
-        toast.warn("Bu roomdagi userlar topilmadi!");
-        return;
+        toast.warn("В этой комнате пока нет игроков.");
+        return false;
       }
 
-      console.log("👥 Players in room:", players);
+      const normalizedSelectedCharacters = Array.isArray(selectedCharacters)
+        ? selectedCharacters.filter((character) => character && typeof character === "object")
+        : [];
 
-      // 3) Random character assignment logic (same as before)
+      if (normalizedSelectedCharacters.length > players.length) {
+        toast.warn("Игроков меньше, чем выбранных ролей. Уберите лишние роли.");
+        return false;
+      }
+
       const shuffled = [...characters].sort(() => 0.5 - Math.random());
+      const citizenRole =
+        shuffled.find((character) => Number(character.id) === 12) ||
+        shuffled.find((character) => character.name === "Мирный житель");
 
-      const mainRoleNames = getMainRoleNames(players.length);
-
-      // Asosiy rollar obyektini topamiz
-      let mainRoles = mainRoleNames.map((roleName) =>
-        shuffled.find((c) => c.name === roleName)
-      );
-
-      // Qolganini Мирный житель bilan to'ldiramiz
-      const citizenRole = shuffled.find((c) => c.name === "Мирный житель");
-      while (mainRoles.length < players.length) {
-        mainRoles.push({ ...citizenRole });
+      if (!citizenRole) {
+        toast.error("Не найдена роль Мирный житель.");
+        return false;
       }
 
-      // Aralashtiramiz
-      const finalRoles = [...mainRoles].sort(() => 0.5 - Math.random());
+      let rolesPool = [];
 
-      // 4) Prepare assignments
+      if (normalizedSelectedCharacters.length > 0) {
+        rolesPool = normalizedSelectedCharacters.map((character) => ({ ...character }));
+      } else {
+        const mainRoleNames = getMainRoleNames(players.length);
+        rolesPool = mainRoleNames
+          .map((roleName) => shuffled.find((character) => character.name === roleName))
+          .filter(Boolean);
+      }
+
+      while (rolesPool.length < players.length) {
+        rolesPool.push({ ...citizenRole });
+      }
+
+      const finalRoles = [...rolesPool].sort(() => 0.5 - Math.random());
       const assignments = players.map((player, index) => ({
         playerId: player.id,
-        character: finalRoles[index % finalRoles.length]
+        character: finalRoles[index % finalRoles.length],
       }));
 
-      console.log("🎭 Character assignments:", assignments);
-
-      // 5) Assign characters to all players
       await assignCharactersToPlayers(room.id, assignments);
 
-      console.log("✅ Characters assigned successfully!");
-      toast.success("Barcha userlarga random character biriktirildi!");
+      toast.success(
+        normalizedSelectedCharacters.length > 0
+          ? "Роли назначены по выбранному набору."
+          : "Роли назначены автоматически."
+      );
+
+      return true;
     } catch (error) {
-      toast.error("Xatolik:", error);
-      toast.error("Characterlar biriktirishda xatolik yuz berdi.");
+      console.error("Character assignment error:", error);
+      toast.error("Ошибка при назначении ролей.");
+      return false;
     }
   };
-
   return (
     <>
       <Router>
@@ -408,6 +416,7 @@ function App() {
                 path="/create/:id"
                 element={<CreateGamePage id={id} startGame={startGame} />}
               />
+              <Route path="/profile-role-setup" element={<ProfileRoleSetupPage generateId={generateId} />} />
               <Route path="/join" element={<JoinGamePage />} />
               <Route path="/dashboard" element={<AdminDashboardPage />} />
               <Route path="/character" element={<CharacterGamePage />} />
@@ -422,3 +431,5 @@ function App() {
 }
 
 export default App;
+
+

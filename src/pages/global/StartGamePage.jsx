@@ -1,28 +1,27 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { LoaderCircle } from 'lucide-react';
-
+import { LoaderCircle } from "lucide-react";
+import { toast } from "react-toastify";
 
 const StartGamePage = ({ IsFullRoom, IsFullGamer, generateId }) => {
   const [isStarting, setIsStarting] = useState(false);
 
   const createNavigate = useNavigate();
+  const navigate = useNavigate();
 
   const handleStart = async () => {
+    if (isStarting) return;
+
     setIsStarting(true);
     try {
-      console.log("🎬 StartGamePage: Creating room...");
       const newId = await generateId();
-      console.log("🎬 StartGamePage: Navigating to /create/" + newId);
       createNavigate(`/create/${newId}`);
     } catch (error) {
-      console.error("❌ Error in handleStart:", error);
+      console.error("Create room error:", error);
       toast.error("Ошибка создания комнаты: " + error.message);
       setIsStarting(false);
     }
   };
-
-  const navigate = useNavigate();
 
   const handleJoin = () => {
     navigate("/join");
@@ -57,12 +56,12 @@ const StartGamePage = ({ IsFullRoom, IsFullGamer, generateId }) => {
             onClick={handleJoin}
             className="mafia-btn w-full sm:w-80"
           >
-            Присоединиться комнату!
+            Присоединиться к комнате!
           </button>
         </div>
       </div>
       <h1 className="absolute text-sm font-black text-center bottom-1 text-[#dbd0c0]">
-        MVMAFIA — играть в оффлайн Мафию бесплатно
+        MVMAFIA - играть в оффлайн Мафию бесплатно
       </h1>
     </div>
   );

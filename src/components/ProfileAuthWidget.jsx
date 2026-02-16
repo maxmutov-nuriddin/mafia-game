@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+﻿import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Chrome, Lock, LogOut, Mail, UserRound, X } from "lucide-react";
 import { toast } from "react-toastify";
 import {
@@ -28,6 +29,7 @@ const ProfileAuthWidget = () => {
     return LANGUAGE_OPTIONS.includes(savedLanguage) ? savedLanguage : "ru";
   });
   const langMenuRef = useRef(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const unsubscribe = subscribeAuthState((nextUser) => {
@@ -126,6 +128,12 @@ const ProfileAuthWidget = () => {
     }
   };
 
+  const handleCreateGameFromProfile = () => {
+    if (isLoading) return;
+    setIsOpen(false);
+    navigate("/profile-role-setup");
+  };
+
   const handleLanguageChange = (nextLanguage) => {
     setLanguage(nextLanguage);
     setIsLangMenuOpen(false);
@@ -208,6 +216,15 @@ const ProfileAuthWidget = () => {
                     <p className="text-sm opacity-75">Вы вошли как</p>
                     <p className="font-bold break-all">{user.email || profileLabel}</p>
                   </div>
+
+                  <button
+                    type="button"
+                    onClick={handleCreateGameFromProfile}
+                    className="mafia-btn mafia-btn--primary w-full"
+                  >
+                    Создать игру с выбором ролей
+                  </button>
+
                   <button
                     type="button"
                     onClick={handleLogout}

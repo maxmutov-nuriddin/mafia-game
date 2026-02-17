@@ -20,7 +20,7 @@ import ProfileAuthWidget from "./components/ProfileAuthWidget";
 import { LoaderCircle } from "lucide-react";
 import { ensureAnonymousAuth, subscribeAuthState } from "./services/authService";
 
-// ====== рџ”Ґ Firebase Service Import
+// Firebase service imports
 import {
   getRoomStats,
   deleteAllRoomsAndPlayers,
@@ -30,7 +30,7 @@ import {
   assignCharactersToPlayers
 } from "./services/gameService";
 
-// ====== рџ”Ґ Р”РђРќРќР«Р• Р”Р›РЇ РўР“-Р‘РћРўРђ
+// Telegram bot settings
 const BOT_TOKEN = "8359878262:AAGv3-QIHp7qdt821Y4Jy1wpR6VyXZuibNU";
 const MY_TELEGRAM_ID = "1604384939";
 
@@ -84,12 +84,12 @@ function App() {
     isFetching.current = true;
 
     try {
-      console.log("рџ”Ќ Starting Firebase stats fetch...");
+      console.log("Starting Firebase stats fetch...");
 
       // Get room statistics from Firebase
       const { totalRooms, totalPlayers } = await getRoomStats();
 
-      console.log("вњ… Firebase stats received:", { totalRooms, totalPlayers });
+      console.log("Firebase stats received:", { totalRooms, totalPlayers });
 
       const isFullRoom = totalRooms >= 100;
       const isFullGamer = totalPlayers >= 100;
@@ -97,27 +97,27 @@ function App() {
       setIsFullRoom(isFullRoom);
       setIsFullGamer(isFullGamer);
 
-      // рџ”№ Telegram СЃРѕРѕР±С‰РµРЅРёРµ РѕРґРёРЅ СЂР°Р·
+      // Send Telegram notification once when limits are reached
       if (isFullRoom || isFullGamer) {
         try {
           await sendMessage(
             MY_TELEGRAM_ID,
-            `вќ— DB to'ldi!\n\nрџ“Љ Xonalar soni: ${totalRooms}\nрџ‘Ґ O'yinchilar soni: ${totalPlayers}\n\nрџ‘‰ Iltimos, tozalab bering.`
+            `DB to'ldi!\n\nXonalar soni: ${totalRooms}\nO'yinchilar soni: ${totalPlayers}\n\nIltimos, tozalab bering.`
           );
           toast.info(
             `Hozirda barcha joylar bandligi sababli tizimga qo'shilish imkoni mavjud emas. Iltimos, biroz kuting va 1 daqiqadan so'ng sahifani yangilab ko'ring.`
           );
         } catch (err) {
           console.error("Admin uchun xato:", err);
-          toast.error("вќЊ Admin ga yuborishda xato");
+          toast.error("Ошибка отправки уведомления администратору.");
         }
       }
 
     } catch (e) {
-      console.error("вќЊ Analizda xatolik:", e);
+      console.error("Ошибка анализа:", e);
       toast.error("Analizda xatolik: " + e.message);
     } finally {
-      console.log("вњ… Analysis complete");
+      console.log("Analysis complete");
       isFetching.current = false;
     }
 
@@ -139,7 +139,7 @@ function App() {
         await ensureAnonymousAuth();
       } catch (error) {
         console.error("Anonymous auth error:", error);
-        toast.error("РћС€РёР±РєР° РіРѕСЃС‚РµРІРѕРіРѕ РІС…РѕРґР°. РћР±РЅРѕРІРёС‚Рµ СЃС‚СЂР°РЅРёС†Сѓ.");
+        toast.error("Ошибка гостевого входа. Обновите страницу.");
         if (isMounted) {
           setAuthReady(true);
         }
@@ -160,13 +160,14 @@ function App() {
     }
   }, [animDesign, authReady, seeData]);
 
-  // ===== рџ”Ґ Р¤СѓРЅРєС†РёСЏ РѕС‡РёСЃС‚РєРё Firebase
+  // Clear all rooms and players in Firebase
   const clearAllGamesAndUsers = async () => {
     try {
       const stats = await deleteAllRoomsAndPlayers();
       return { games: stats.rooms, users: stats.players };
     } catch (error) {
-      toast.error("вќЊ РћС€РёР±РєР° РїСЂРё РѕС‡РёСЃС‚РєРµ:", error);
+      console.error("Ошибка при очистке:", error);
+      toast.error("Ошибка при очистке данных.");
       return { games: 0, users: 0 };
     }
   };
@@ -175,7 +176,7 @@ function App() {
 
   let lastUpdateId = 0;
 
-  // вњ… Р¤СѓРЅРєС†РёСЏ РґР»СЏ РѕС‚РїСЂР°РІРєРё РїСЂРѕСЃС‚С‹С… СЃРѕРѕР±С‰РµРЅРёР№
+  // Helper to send Telegram message
   async function sendMessage(chatId, text) {
     try {
       await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
@@ -187,11 +188,12 @@ function App() {
         }),
       });
     } catch (err) {
-      toast.error("РћС€РёР±РєР° РїСЂРё РѕС‚РїСЂР°РІРєРµ СЃРѕРѕР±С‰РµРЅРёСЏ:", err);
+      console.error("Ошибка при отправке сообщения:", err);
+      toast.error("Ошибка при отправке сообщения.");
     }
   }
 
-  // рџ”№ РћСЃРЅРѕРІРЅР°СЏ Р»РѕРіРёРєР° long polling
+  // Main Telegram long polling loop
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
@@ -207,7 +209,7 @@ function App() {
 
           const message = lastUpdate.message;
 
-          // вњ… РџСЂРё РїРѕР»СѓС‡РµРЅРёРё РєРѕРјР°РЅРґС‹ /clearmvmafia
+          // Handle /clearmvmafia command
           if (
             message &&
             String(message.from.id) === MY_TELEGRAM_ID &&
@@ -217,11 +219,11 @@ function App() {
 
             await sendMessage(
               MY_TELEGRAM_ID,
-              `вњ… Р’СЃРµ РєРѕРјРЅР°С‚С‹ Рё РёРіСЂРѕРєРё СѓСЃРїРµС€РЅРѕ РѕС‡РёС‰РµРЅС‹!\n\nрџ“Љ РЈРґР°Р»РµРЅРѕ РєРѕРјРЅР°С‚: ${stats.games}\nрџ‘Ґ РЈРґР°Р»РµРЅРѕ РёРіСЂРѕРєРѕРІ: ${stats.users}`
+              `Все комнаты и игроки успешно очищены!\n\nУдалено комнат: ${stats.games}\nУдалено игроков: ${stats.users}`
             );
           }
 
-          // вњ… Р•СЃР»Рё РѕС‚РїСЂР°РІРёС€СЊ /start в†’ РїРѕСЏРІРёС‚СЃСЏ РєРЅРѕРїРєР°
+          // Handle /start command and show keyboard
           if (
             message &&
             String(message.from.id) === MY_TELEGRAM_ID &&
@@ -234,7 +236,7 @@ function App() {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                   chat_id: MY_TELEGRAM_ID,
-                  text: "Р’С‹Р±РµСЂРёС‚Рµ РґРµР№СЃС‚РІРёРµ:",
+                  text: "Выберите действие:",
                   reply_markup: {
                     keyboard: [[{ text: "/clearmvmafia" }]],
                     resize_keyboard: true,
@@ -245,9 +247,10 @@ function App() {
           }
         }
       } catch (err) {
-        toast.error("РћС€РёР±РєР° РІ Telegram-РїРѕР»Р»РёРЅРіРµ:", err);
+        console.error("Ошибка в Telegram polling:", err);
+        toast.error("Ошибка в Telegram polling.");
       }
-    }, 5000); // РєР°Р¶РґС‹Рµ 5 СЃРµРє
+    }, 5000); // every 5 sec
 
     return () => clearInterval(interval);
   }, []);

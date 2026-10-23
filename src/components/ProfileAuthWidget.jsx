@@ -12,6 +12,7 @@ import {
 } from "../services/authService";
 import { useLanguage } from "../i18n/LanguageContext";
 import { LANGUAGE_OPTIONS } from "../i18n/translations";
+import { listenToPublicProfile } from "../services/socialService";
 
 const ProfileAuthWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -22,6 +23,7 @@ const ProfileAuthWidget = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [user, setUser] = useState(null);
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
+  const [nick, setNick] = useState(null);
   const { t, language, setLanguage } = useLanguage();
   const langMenuRef = useRef(null);
   const navigate = useNavigate();
@@ -46,13 +48,20 @@ const ProfileAuthWidget = () => {
   }, []);
 
   const hasAccountUser = !!user && !user.isAnonymous;
+  const accountUid = hasAccountUser ? user.uid : null;
+
+  useEffect(() => {
+    if (!accountUid) return undefined;
+    return listenToPublicProfile(accountUid, (publicProfile) => setNick(publicProfile?.nick || null));
+  }, [accountUid]);
 
   const profileLabel = useMemo(() => {
     if (!hasAccountUser) return t("auth.profile");
+    if (nick) return nick;
     if (user.displayName) return user.displayName;
     if (user.email) return user.email.split("@")[0];
     return t("auth.user");
-  }, [hasAccountUser, user, t]);
+  }, [hasAccountUser, user, nick, t]);
 
   const resetForm = () => {
     setEmail("");
@@ -120,7 +129,7 @@ const ProfileAuthWidget = () => {
   const handleCreateGameFromProfile = () => {
     if (isLoading) return;
     setIsOpen(false);
-    navigate("/profile-role-setup");
+    navigate("/profile");
   };
 
   const handleLanguageChange = (nextLanguage) => {
@@ -215,7 +224,7 @@ const ProfileAuthWidget = () => {
                     onClick={handleCreateGameFromProfile}
                     className="mafia-btn mafia-btn--primary w-full"
                   >
-                    {t("auth.createWithRoles")}
+                    {t("profile.open")}
                   </button>
 
                   <button

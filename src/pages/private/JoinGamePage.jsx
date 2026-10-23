@@ -1,8 +1,15 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { LoaderCircle, Undo2 } from "lucide-react";
 import { toast } from "react-toastify";
-import { getRoomByCustomId, getPlayersInRoom, addPlayerToRoom } from "../../services/gameService";
+import {
+  getRoomByCustomId,
+  getPlayersInRoom,
+  addPlayerToRoom,
+  setPlayerUid,
+} from "../../services/gameService";
+import { getRegisteredUid } from "../../services/authService";
+import { getMyNick } from "../../services/socialService";
 import {
   ADMIN_LOGIN_ID,
   ADMIN_LOGIN_NAME,
@@ -19,22 +26,33 @@ import { useLanguage } from "../../i18n/LanguageContext";
 const JoinGamePage = () => {
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const [gameId, setGameId] = useState("");
+  const [searchParams] = useSearchParams();
+  const roomFromLink = (searchParams.get("room") || "").replace(/\D/g, "");
+  const [gameId, setGameId] = useState(roomFromLink);
   const [username, setUsername] = useState("");
   const [isJoining, setIsJoining] = useState(false);
 
   useEffect(() => {
     const lastSession = getLastRememberedPlayerSession();
-    if (!lastSession) return;
 
-    if (lastSession.gameId) {
+    // A room id from the shared link wins over the remembered one
+    if (lastSession?.gameId && !roomFromLink) {
       setGameId(String(lastSession.gameId));
     }
 
-    if (lastSession.playerName) {
+    if (lastSession?.playerName) {
       setUsername(String(lastSession.playerName));
     }
-  }, []);
+
+    // A registered player's nick is their name in every game
+    if (getRegisteredUid()) {
+      getMyNick()
+        .then((nick) => {
+          if (nick) setUsername(nick);
+        })
+        .catch((error) => console.error("Could not load the nick:", error));
+    }
+  }, [roomFromLink]);
 
   const handleJoin = async (e) => {
     e.preventDefault();
@@ -75,7 +93,12 @@ const JoinGamePage = () => {
         (player) => String(player.id).trim() === rememberedPlayerId
       );
 
+      const registeredUid = getRegisteredUid();
+
       if (rememberedPlayer) {
+        if (registeredUid && !rememberedPlayer.uid) {
+          await setPlayerUid(room.id, rememberedPlayer.id, registeredUid);
+        }
         rememberPlayerSession({
           gameId: cleanGameId,
           userId: rememberedPlayer.id,
@@ -91,6 +114,9 @@ const JoinGamePage = () => {
       );
 
       if (existingByName) {
+        if (registeredUid && !existingByName.uid) {
+          await setPlayerUid(room.id, existingByName.id, registeredUid);
+        }
         rememberPlayerSession({
           gameId: cleanGameId,
           userId: existingByName.id,
@@ -102,7 +128,7 @@ const JoinGamePage = () => {
       }
 
       // 5. Create new player
-      const playerId = await addPlayerToRoom(room.id, playerName);
+      const playerId = await addPlayerToRoom(room.id, playerName, registeredUid);
 
       rememberPlayerSession({
         gameId: cleanGameId,

@@ -1,11 +1,14 @@
 ﻿import { useEffect, useRef, useState } from "react";
 import { useLanguage } from "../i18n/LanguageContext";
 import { getRoleName } from "../i18n/roles";
+import { getSkinCardStyle, getSkinClassName } from "../game/skins";
 
 const REVEAL_DURATION_MS = 500;
 
-const CharacterList = ({ character }) => {
+const CharacterList = ({ character, skinId }) => {
   const { t, language } = useLanguage();
+  const cardStyle = getSkinCardStyle(skinId);
+  const skinClass = getSkinClassName(skinId);
   const [isRevealed, setIsRevealed] = useState(false);
   const hideTimerRef = useRef(null);
 
@@ -60,12 +63,8 @@ const CharacterList = ({ character }) => {
               style={{ backfaceVisibility: "hidden", WebkitBackfaceVisibility: "hidden" }}
             >
               <div
-                className="mafia-role-card w-full h-full p-3 flex flex-col items-center justify-center text-center"
-                style={{
-                  backgroundImage: "url('/card-bg-gamer.png')",
-                  backgroundPosition: "center",
-                  backgroundSize: "cover",
-                }}
+                className={`mafia-role-card w-full h-full p-3 flex flex-col items-center justify-center text-center ${skinClass}`}
+                style={cardStyle}
               >
                 <p className="text-sm font-semibold opacity-75">{t("card.playerCard")}</p>
                 <p className="mt-2 text-xl font-black leading-tight">{t("card.tapCard")}</p>
@@ -81,12 +80,8 @@ const CharacterList = ({ character }) => {
               }}
             >
               <div
-                className="mafia-role-card w-full h-full p-2.5 flex flex-col"
-                style={{
-                  backgroundImage: "url('/card-bg-gamer.png')",
-                  backgroundPosition: "center",
-                  backgroundSize: "cover",
-                }}
+                className={`mafia-role-card w-full h-full p-2.5 flex flex-col ${skinClass}`}
+                style={cardStyle}
               >
                 <div className="h-[220px] md:h-[235px] p-2 flex-shrink-0 flex items-center justify-center">
                   <img

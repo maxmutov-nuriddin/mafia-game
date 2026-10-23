@@ -12,6 +12,7 @@ import { characters } from "../../services/data";
 import { clearAllRememberedPlayerSessions } from "../../utils/playerSession";
 import { useLanguage } from "../../i18n/LanguageContext";
 import { getRoleName } from "../../i18n/roles";
+import RoomShare from "../../components/RoomShare";
 
 const CIVILIAN_ROLE_ID = 12;
 const PROFILE_ROLE_COUNTS_STORAGE_KEY = "mafia-profile-role-counts";
@@ -347,6 +348,7 @@ const CreateGamePage = ({ startGame }) => {
 
         <img src="/mafia-logo.png" className="w-20 h-20" alt="" />
         <h1 className="text-3xl sm:text-5xl font-black">ID {id}</h1>
+        <RoomShare roomId={id} />
 
         {isProfileMode ? (
           <div className="w-full mafia-panel p-3 bg-white/90">

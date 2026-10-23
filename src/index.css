@@ -586,7 +586,7 @@ input::-webkit-inner-spin-button {
   display: grid;
   grid-template-columns: 1fr;
   gap: 0.55rem;
-  max-height: 360px;
+  max-height: clamp(220px, 34vh, 360px);
   overflow: auto;
   padding-right: 0.2rem;
   scrollbar-width: thin;
@@ -791,5 +791,114 @@ input::-webkit-inner-spin-button {
 @media (min-width: 1100px) {
   .profile-setup-list {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+
+/* ---- Animated card skins (see src/game/skins.js) ---- */
+.skin-cyber,
+.skin-neon,
+.skin-gold,
+.skin-ice,
+.skin-holo,
+.skin-inferno,
+.skin-royal {
+  position: relative;
+  overflow: hidden;
+}
+
+.skin-cyber::after,
+.skin-gold::after,
+.skin-ice::after,
+.skin-holo::after,
+.skin-inferno::after,
+.skin-royal::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.skin-neon { animation: skin-neon-pulse 2.4s ease-in-out infinite; }
+@keyframes skin-neon-pulse {
+  0%, 100% { box-shadow: 0 0 0 2px #ff2bd6, 0 0 14px rgba(255, 43, 214, 0.5); }
+  50% { box-shadow: 0 0 0 2px #ff7aea, 0 0 32px rgba(255, 43, 214, 0.95); }
+}
+
+.skin-royal { animation: skin-royal-glow 3.2s ease-in-out infinite; }
+@keyframes skin-royal-glow {
+  0%, 100% { box-shadow: 0 0 0 2px #d4af37, 0 0 12px rgba(212, 175, 55, 0.45); }
+  50% { box-shadow: 0 0 0 2px #f1d56a, 0 0 30px rgba(212, 175, 55, 0.9); }
+}
+
+.skin-gold::after,
+.skin-royal::after {
+  background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.6) 50%, transparent 65%);
+  mix-blend-mode: screen;
+  transform: translateX(-120%);
+  animation: skin-shine 3.4s ease-in-out infinite;
+}
+@keyframes skin-shine {
+  0%, 55% { transform: translateX(-120%); }
+  100% { transform: translateX(120%); }
+}
+
+.skin-cyber::after {
+  height: 28%;
+  inset: auto 0 auto 0;
+  top: -28%;
+  background: linear-gradient(transparent, rgba(0, 255, 200, 0.4), transparent);
+  animation: skin-scan 3s linear infinite;
+}
+@keyframes skin-scan {
+  to { transform: translateY(460%); }
+}
+
+.skin-ice::after {
+  background:
+    radial-gradient(circle, rgba(255, 255, 255, 0.95) 0 1.4px, transparent 2px) 0 0 / 46px 46px,
+    radial-gradient(circle, rgba(255, 255, 255, 0.95) 0 1.4px, transparent 2px) 23px 23px / 46px 46px;
+  animation: skin-twinkle 2.2s ease-in-out infinite alternate;
+}
+@keyframes skin-twinkle {
+  from { opacity: 0.15; }
+  to { opacity: 0.9; }
+}
+
+.skin-holo::after {
+  background: conic-gradient(
+    from 0deg,
+    rgba(255, 0, 128, 0.28),
+    rgba(0, 200, 255, 0.28),
+    rgba(120, 255, 0, 0.28),
+    rgba(255, 0, 128, 0.28)
+  );
+  mix-blend-mode: overlay;
+  animation: skin-hue 6s linear infinite;
+}
+@keyframes skin-hue {
+  to { filter: hue-rotate(360deg); }
+}
+
+.skin-inferno::after {
+  background: radial-gradient(ellipse at 50% 100%, rgba(255, 200, 60, 0.7), transparent 62%);
+  transform-origin: bottom;
+  animation: skin-flicker 1.5s ease-in-out infinite alternate;
+}
+@keyframes skin-flicker {
+  from { opacity: 0.45; transform: scaleY(0.85); }
+  to { opacity: 1; transform: scaleY(1.1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skin-neon,
+  .skin-royal,
+  .skin-cyber::after,
+  .skin-gold::after,
+  .skin-ice::after,
+  .skin-holo::after,
+  .skin-inferno::after,
+  .skin-royal::after {
+    animation: none;
   }
 }

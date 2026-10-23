@@ -14,6 +14,9 @@ import {
 import { clearAllRememberedPlayerSessions } from "../../utils/playerSession";
 import { useLanguage } from "../../i18n/LanguageContext";
 import { getRoleName } from "../../i18n/roles";
+import HostGamePanel from "../../components/game/HostGamePanel";
+import { normalizeSettings } from "../../game/phases";
+import { getSkinCardStyle, getSkinClassName } from "../../game/skins";
 
 const ROOM_LIFETIME_SECONDS = 900;
 
@@ -31,6 +34,8 @@ const GameStartPage = () => {
   const [isStarting, setIsStarting] = useState(false);
   const [selectedPlayers, setSelectedPlayers] = useState([]);
   const [flippedPlayers, setFlippedPlayers] = useState({});
+  const [roomKey, setRoomKey] = useState(null);
+  const [roomSettings, setRoomSettings] = useState(() => normalizeSettings(null));
 
   const timerRef = useRef(null);
   const gameIdRef = useRef(null);
@@ -158,6 +163,8 @@ const GameStartPage = () => {
       if (!room) return;
 
       gameIdRef.current = room.id;
+      setRoomKey(room.id);
+      setRoomSettings(normalizeSettings(room.data?.settings));
 
       unsubscribe = listenToRoomPlayers(room.id, (players) => {
         const sortedPlayers = sortPlayers(players);
@@ -273,6 +280,8 @@ const GameStartPage = () => {
           </button>
         </div>
       </div>
+
+      <HostGamePanel roomId={roomKey} settings={roomSettings} players={games} />
 
       <style
         dangerouslySetInnerHTML={{
@@ -428,7 +437,8 @@ const GameStartPage = () => {
                         >
                           <div
                             id="card-bg-imgs"
-                            className="mafia-role-card w-full h-full flex flex-col items-center justify-center px-4 text-center"
+                            style={getSkinCardStyle(roomSettings.skin)}
+                            className={`mafia-role-card w-full h-full flex flex-col items-center justify-center px-4 text-center ${getSkinClassName(roomSettings.skin)}`}
                           >
                             <p className="text-sm font-semibold opacity-70">{t("game.player")}</p>
                             <p className="mt-2 text-3xl font-black break-words">{playerName}</p>
@@ -444,7 +454,11 @@ const GameStartPage = () => {
                             WebkitBackfaceVisibility: "hidden",
                           }}
                         >
-                          <CharacterListCard character={player.character} onDelete={() => { }} />
+                          <CharacterListCard
+                            character={player.character}
+                            skinId={roomSettings.skin}
+                            onDelete={() => { }}
+                          />
                         </div>
                       </div>
                     </div>

@@ -5,6 +5,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from "react-route
 import StartGamePage from "./pages/global/StartGamePage";
 import CreateGamePage from "./pages/global/CreateGamePage";
 import ProfileRoleSetupPage from "./pages/global/ProfileRoleSetupPage";
+import ProfilePage from "./pages/private/ProfilePage";
 import JoinGamePage from "./pages/private/JoinGamePage";
 import AdminDashboardPage from "./pages/private/AdminDashboardPage";
 import CharacterGamePage from "./pages/private/СharacterGamePage";
@@ -20,21 +21,18 @@ import ProfileAuthWidget from "./components/ProfileAuthWidget";
 import { LoaderCircle } from "lucide-react";
 import { ensureAnonymousAuth, subscribeAuthState } from "./services/authService";
 import FortisWebCredit from "./components/FortisWebCredit";
+import PresenceTracker from "./components/PresenceTracker";
 import { translate as t } from "./i18n/LanguageContext";
+import { getEquippedSkinId } from "./services/profileService";
 
 // Firebase service imports
 import {
   getRoomStats,
-  deleteAllRoomsAndPlayers,
   createRoom,
   getRoomByCustomId,
   getPlayersInRoom,
   assignCharactersToPlayers
 } from "./services/gameService";
-
-// Telegram bot settings
-const BOT_TOKEN = "8359878262:AAGv3-QIHp7qdt821Y4Jy1wpR6VyXZuibNU";
-const MY_TELEGRAM_ID = "1604384939";
 
 function generateUnique6DigitNumber(existingIds) {
   let id;
@@ -66,7 +64,9 @@ function getMainRoleIds(count) {
 function ProfileWidgetByRoute({ showWhenReady }) {
   const location = useLocation();
   const isGameRoute =
-    location.pathname.startsWith("/gamestart/") || location.pathname === "/character";
+    location.pathname.startsWith("/gamestart/") ||
+    location.pathname === "/character" ||
+    location.pathname === "/profile";
 
   if (!showWhenReady || isGameRoute) return null;
   return <ProfileAuthWidget />;
@@ -99,18 +99,8 @@ function App() {
       setIsFullRoom(isFullRoom);
       setIsFullGamer(isFullGamer);
 
-      // Send Telegram notification once when limits are reached
       if (isFullRoom || isFullGamer) {
-        try {
-          await sendMessage(
-            MY_TELEGRAM_ID,
-            `DB to'ldi!\n\nXonalar soni: ${totalRooms}\nO'yinchilar soni: ${totalPlayers}\n\nIltimos, tozalab bering.`
-          );
-          toast.info(t("app.fullNoticeText"));
-        } catch (err) {
-          console.error("Admin uchun xato:", err);
-          toast.error(t("app.adminNotifyError"));
-        }
+        toast.info(t("app.fullNoticeText"));
       }
 
     } catch (e) {
@@ -160,107 +150,14 @@ function App() {
     }
   }, [animDesign, authReady, seeData]);
 
-  // Clear all rooms and players in Firebase
-  const clearAllGamesAndUsers = async () => {
-    try {
-      const stats = await deleteAllRoomsAndPlayers();
-      return { games: stats.rooms, users: stats.players };
-    } catch (error) {
-      console.error("Ошибка при очистке:", error);
-      toast.error(t("app.clearError"));
-      return { games: 0, users: 0 };
-    }
-  };
-
-
-
-  let lastUpdateId = 0;
-
-  // Helper to send Telegram message
-  async function sendMessage(chatId, text) {
-    try {
-      await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          chat_id: chatId,
-          text: text,
-        }),
-      });
-    } catch (err) {
-      console.error("Ошибка при отправке сообщения:", err);
-      toast.error(t("app.sendError"));
-    }
-  }
-
-  // Main Telegram long polling loop
-  useEffect(() => {
-    const interval = setInterval(async () => {
-      try {
-        const res = await fetch(
-          `https://api.telegram.org/bot${BOT_TOKEN}/getUpdates?offset=${lastUpdateId + 1
-          }`
-        );
-        const data = await res.json();
-
-        if (data.result && data.result.length > 0) {
-          const lastUpdate = data.result[data.result.length - 1];
-          lastUpdateId = lastUpdate.update_id;
-
-          const message = lastUpdate.message;
-
-          // Handle /clearmvmafia command
-          if (
-            message &&
-            String(message.from.id) === MY_TELEGRAM_ID &&
-            message.text === "/clearmvmafia"
-          ) {
-            const stats = await clearAllGamesAndUsers();
-
-            await sendMessage(
-              MY_TELEGRAM_ID,
-              `Все комнаты и игроки успешно очищены!\n\nУдалено комнат: ${stats.games}\nУдалено игроков: ${stats.users}`
-            );
-          }
-
-          // Handle /start command and show keyboard
-          if (
-            message &&
-            String(message.from.id) === MY_TELEGRAM_ID &&
-            message.text === "/start"
-          ) {
-            await fetch(
-              `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  chat_id: MY_TELEGRAM_ID,
-                  text: "Выберите действие:",
-                  reply_markup: {
-                    keyboard: [[{ text: "/clearmvmafia" }]],
-                    resize_keyboard: true,
-                  },
-                }),
-              }
-            );
-          }
-        }
-      } catch (err) {
-        console.error("Ошибка в Telegram polling:", err);
-        toast.error(t("app.pollingError"));
-      }
-    }, 5000); // every 5 sec
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const generateId = async () => {
+  const generateId = async (options) => {
     const newId = generateUnique6DigitNumber(generatedIds.current);
     setId(newId);
 
     try {
-      await createRoom(newId);
+      // The host skin is applied to every card in the room
+      const roomOptions = options ? { ...options, skin: await getEquippedSkinId() } : options;
+      await createRoom(newId, roomOptions);
       toast.success(t("app.roomCreated", { id: newId }));
     } catch (error) {
       console.error("Create room error:", error);
@@ -360,6 +257,7 @@ function App() {
         />
         <ProfileWidgetByRoute showWhenReady={animDesign && authReady} />
         <FortisWebCredit />
+        <PresenceTracker />
         {
           !animDesign ? (
             <Animated onFinish={() => setAnimDesign(true)} />
@@ -377,6 +275,7 @@ function App() {
                 element={<CreateGamePage id={id} startGame={startGame} />}
               />
               <Route path="/profile-role-setup" element={<ProfileRoleSetupPage generateId={generateId} />} />
+              <Route path="/profile" element={<ProfilePage generateId={generateId} />} />
               <Route path="/join" element={<JoinGamePage />} />
               <Route path="/dashboard" element={<AdminDashboardPage />} />
               <Route path="/character" element={<CharacterGamePage />} />

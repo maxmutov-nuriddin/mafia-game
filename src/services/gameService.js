@@ -12,13 +12,14 @@ import {
    equalTo,
    update
 } from 'firebase/database';
+import { roundKey } from '../game/phases';
 
 /**
  * Create a new game room
  * @param {string} customId - 6-digit room ID
  * @returns {Promise<string>} - Firebase generated game ID
  */
-export async function createRoom(customId) {
+export async function createRoom(customId, settings) {
    try {
       console.log("🔥 Firebase createRoom called with customId:", customId);
       const gamesRef = ref(database, 'games');
@@ -30,7 +31,8 @@ export async function createRoom(customId) {
       await set(newGameRef, {
          customId: String(customId),
          createdAt: Date.now(),
-         players: {}
+         players: {},
+         ...(settings ? { settings } : {})
       });
 
       console.log("✅ Room data written to Firebase successfully");
@@ -97,16 +99,18 @@ export async function getAllRooms() {
  * Add a player to a room
  * @param {string} gameId - Firebase game ID
  * @param {string} playerName - Player's name
+ * @param {string|null} uid - Auth uid of a registered user (earns points), otherwise null
  * @returns {Promise<string>} - Player ID
  */
-export async function addPlayerToRoom(gameId, playerName) {
+export async function addPlayerToRoom(gameId, playerName, uid = null) {
    const playersRef = ref(database, `games/${gameId}/players`);
    const newPlayerRef = push(playersRef);
 
    await set(newPlayerRef, {
       name: playerName,
       character: null,
-      eliminated: false // New field to track if player is eliminated
+      eliminated: false, // New field to track if player is eliminated
+      ...(uid ? { uid } : {})
    });
 
    return newPlayerRef.key;
@@ -280,4 +284,80 @@ export async function deleteAllRoomsAndPlayers() {
    await remove(gamesRef);
 
    return { rooms: totalRooms, players: totalPlayers };
+}
+
+/**
+ * Listen to the phase state, actions, votes and results of a room's game flow
+ * @param {string} gameId - Firebase game ID
+ * @param {Function} callback - Called with the raw `game` node, or null when it does not exist
+ * @returns {Function} - Unsubscribe function
+ */
+export function listenToGame(gameId, callback) {
+   const gameRef = ref(database, `games/${gameId}/game`);
+
+   const listener = onValue(gameRef, (snapshot) => {
+      callback(snapshot.exists() ? snapshot.val() : null);
+   });
+
+   return () => off(gameRef, 'value', listener);
+}
+
+/**
+ * Create the game flow state (host only)
+ * @param {string} gameId - Firebase game ID
+ * @param {object} state - Initial game state
+ */
+export async function initGame(gameId, state) {
+   await set(ref(database, `games/${gameId}/game`), state);
+}
+
+/**
+ * Merge fields into the game flow state (host only)
+ * @param {string} gameId - Firebase game ID
+ * @param {object} patch - Fields to merge; null removes a field
+ */
+export async function updateGameState(gameId, patch) {
+   await update(ref(database, `games/${gameId}/game`), patch);
+}
+
+/**
+ * Save a player's night action for a round
+ * @param {string} gameId - Firebase game ID
+ * @param {number} round - Round number
+ * @param {string} playerId - Acting player
+ * @param {object} action - abilityKey -> target id (or [id, id])
+ */
+export async function submitNightAction(gameId, round, playerId, action) {
+   await set(ref(database, `games/${gameId}/game/actions/${roundKey(round)}/${playerId}`), action);
+}
+
+/**
+ * Save a player's day vote for a round
+ * @param {string} gameId - Firebase game ID
+ * @param {number} round - Round number
+ * @param {string} playerId - Voting player
+ * @param {string} targetId - Voted player id or "skip"
+ */
+export async function submitVote(gameId, round, playerId, targetId) {
+   await set(ref(database, `games/${gameId}/game/votes/${roundKey(round)}/${playerId}`), targetId);
+}
+
+/**
+ * Store each player's private night result for a round (host only)
+ * @param {string} gameId - Firebase game ID
+ * @param {number} round - Round number
+ * @param {Record<string, object>} results - playerId -> result
+ */
+export async function saveNightResults(gameId, round, results) {
+   await set(ref(database, `games/${gameId}/game/results/${roundKey(round)}`), results);
+}
+
+/**
+ * Link a registered user to an existing player (rejoin after registering)
+ * @param {string} gameId - Firebase game ID
+ * @param {string} playerId - Player ID
+ * @param {string} uid - Auth uid
+ */
+export async function setPlayerUid(gameId, playerId, uid) {
+   await set(ref(database, `games/${gameId}/players/${playerId}/uid`), uid);
 }

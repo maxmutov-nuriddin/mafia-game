@@ -72,3 +72,9 @@ export const getAuthErrorMessage = (error) => {
   if (code) return translate("authErr.withCode", { code });
   return translate("authErr.generic");
 };
+
+/** uid of the signed-in registered (non-guest) user, otherwise null */
+export const getRegisteredUid = () => {
+  const user = auth.currentUser;
+  return user && !user.isAnonymous ? user.uid : null;
+};

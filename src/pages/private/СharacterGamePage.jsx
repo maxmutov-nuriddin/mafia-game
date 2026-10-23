@@ -15,6 +15,11 @@ import {
 } from "../../utils/playerSession";
 import { useLanguage } from "../../i18n/LanguageContext";
 import { getRoleDescription } from "../../i18n/roles";
+import PlayerGamePanel from "../../components/game/PlayerGamePanel";
+import { getRegisteredUid } from "../../services/authService";
+import { listenToUserProfile } from "../../services/profileService";
+import { DEFAULT_SKIN_ID } from "../../game/skins";
+import { normalizeSettings } from "../../game/phases";
 
 const CharacterGamePage = () => {
   const { t, language } = useLanguage();
@@ -28,6 +33,9 @@ const CharacterGamePage = () => {
   const [playerData, setPlayerData] = useState(null);
   const [isLeaving, setIsLeaving] = useState(false);
   const [showRoleDescription, setShowRoleDescription] = useState(false);
+  const [roomKey, setRoomKey] = useState(null);
+  const [skinId, setSkinId] = useState(DEFAULT_SKIN_ID);
+  const [roomSettings, setRoomSettings] = useState(() => normalizeSettings(null));
 
   useEffect(() => {
     if (!gameId || !userId) return;
@@ -37,6 +45,8 @@ const CharacterGamePage = () => {
       if (!room) return;
 
       gameIdRef.current = room.id;
+      setRoomKey(room.id);
+      setRoomSettings(normalizeSettings(room.data?.settings));
 
       const unsubscribe = listenToPlayerCharacter(room.id, userId, (data) => {
         if (!data) {
@@ -63,6 +73,12 @@ const CharacterGamePage = () => {
       }
     };
   }, [gameId, userId, navigate]);
+
+  useEffect(() => {
+    const uid = getRegisteredUid();
+    if (!uid) return undefined;
+    return listenToUserProfile(uid, (profile) => setSkinId(profile.skin));
+  }, []);
 
   useEffect(() => {
     setShowRoleDescription(false);
@@ -98,6 +114,9 @@ const CharacterGamePage = () => {
       setIsLeaving(false);
     }
   };
+
+  // Own skin first (it stays on this phone); otherwise the skin the host brought to the room
+  const cardSkinId = skinId !== DEFAULT_SKIN_ID ? skinId : roomSettings.skin;
 
   const canShowRoleDescription = !!playerData?.character && !playerData?.eliminated;
   const roleDescription =
@@ -154,9 +173,17 @@ const CharacterGamePage = () => {
               <p className="mt-2 text-lg font-semibold">{t("character.outSub")}</p>
             </div>
           ) : (
-            <CharacterList character={playerData.character} />
+            <CharacterList character={playerData.character} skinId={cardSkinId} />
           )}
         </div>
+
+        {playerData?.character && (
+          <PlayerGamePanel
+            roomId={roomKey}
+            player={{ ...playerData, id: userId }}
+            settings={roomSettings}
+          />
+        )}
       </div>
     </div>
   );

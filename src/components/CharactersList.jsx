@@ -1,8 +1,11 @@
 ﻿import { useEffect, useRef, useState } from "react";
+import { useLanguage } from "../i18n/LanguageContext";
+import { getRoleName } from "../i18n/roles";
 
 const REVEAL_DURATION_MS = 500;
 
 const CharacterList = ({ character }) => {
+  const { t, language } = useLanguage();
   const [isRevealed, setIsRevealed] = useState(false);
   const hideTimerRef = useRef(null);
 
@@ -42,7 +45,7 @@ const CharacterList = ({ character }) => {
         type="button"
         onClick={revealTemporarily}
         className="w-full max-w-[230px] md:max-w-[245px] cursor-pointer select-none"
-        aria-label="Открыть карту на 1 секунду"
+        aria-label={t("card.revealLabel")}
       >
         <div className="relative h-[295px] md:h-[315px]" style={{ perspective: "1200px" }}>
           <div
@@ -64,8 +67,8 @@ const CharacterList = ({ character }) => {
                   backgroundSize: "cover",
                 }}
               >
-                <p className="text-sm font-semibold opacity-75">Карта игрока</p>
-                <p className="mt-2 text-xl font-black leading-tight">Нажмите на карту</p>
+                <p className="text-sm font-semibold opacity-75">{t("card.playerCard")}</p>
+                <p className="mt-2 text-xl font-black leading-tight">{t("card.tapCard")}</p>
               </div>
             </div>
 
@@ -88,13 +91,15 @@ const CharacterList = ({ character }) => {
                 <div className="h-[220px] md:h-[235px] p-2 flex-shrink-0 flex items-center justify-center">
                   <img
                     src={character.img}
-                    alt={character.name}
+                    alt={getRoleName(character, language)}
                     className="max-w-full max-h-full w-auto h-auto object-contain object-center"
                   />
                 </div>
 
                 <div className="mt-2 rounded-lg border border-[#250506]/20 bg-[#f4ede1]/85 px-3 py-2 text-center">
-                  <h3 className="text-xl font-black leading-tight">{character.name}</h3>
+                  <h3 className="text-xl font-black leading-tight">
+                    {getRoleName(character, language)}
+                  </h3>
                 </div>
               </div>
             </div>

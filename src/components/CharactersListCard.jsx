@@ -1,4 +1,8 @@
+import { useLanguage } from "../i18n/LanguageContext";
+import { getRoleName } from "../i18n/roles";
+
 const CharacterListCard = ({ character, onDelete }) => {
+  const { t, language } = useLanguage();
   if (!character) {
     return (
       <div className="w-full h-full p-2" onClick={onDelete}>
@@ -6,9 +10,9 @@ const CharacterListCard = ({ character, onDelete }) => {
           className="mafia-role-card w-full h-full p-4 text-center flex flex-col gap-3"
           id="card-bg-imgs"
         >
-          <h3 className="text-2xl font-black mt-1">Ожидание...</h3>
+          <h3 className="text-2xl font-black mt-1">{t("card.waiting")}</h3>
           <p className="text-md font-bold mt-auto">
-            <i>Персонаж еще не назначен</i>
+            <i>{t("card.notAssigned")}</i>
           </p>
         </div>
       </div>
@@ -25,12 +29,14 @@ const CharacterListCard = ({ character, onDelete }) => {
         <div className="flex-1 min-h-0 p-2 flex items-center justify-center">
           <img
             src={`/${character.img}`}
-            alt={character.name}
+            alt={getRoleName(character, language)}
             className="max-w-full max-h-full w-auto h-auto object-contain object-center"
           />
         </div>
         <div className="mt-3 rounded-lg border border-[#250506]/20 bg-[#f4ede1]/85 px-3 py-2 text-center">
-          <h3 className="text-2xl font-black leading-tight">{character.name}</h3>
+          <h3 className="text-2xl font-black leading-tight">
+            {getRoleName(character, language)}
+          </h3>
         </div>
       </div>
     </div>

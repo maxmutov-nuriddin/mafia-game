@@ -13,8 +13,11 @@ import {
   forgetRememberedPlayer,
   rememberPlayerSession,
 } from "../../utils/playerSession";
+import { useLanguage } from "../../i18n/LanguageContext";
+import { getRoleDescription } from "../../i18n/roles";
 
 const CharacterGamePage = () => {
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -87,17 +90,21 @@ const CharacterGamePage = () => {
       }
       clearLastRememberedPlayerSession();
 
-      toast.info("Вы покинули комнату.");
+      toast.info(t("character.left"));
       navigate("/");
     } catch (error) {
       console.error(error);
-      toast.error("Не удалось покинуть комнату.");
+      toast.error(t("character.leaveError"));
       setIsLeaving(false);
     }
   };
 
   const canShowRoleDescription = !!playerData?.character && !playerData?.eliminated;
-  const roleDescription = playerData?.character?.description?.trim() || "Описание роли пока недоступно.";
+  const roleDescription =
+    getRoleDescription(playerData?.character, language)?.trim() || t("character.noDescription");
+  const descriptionToggleLabel = showRoleDescription
+    ? t("character.hideDescription")
+    : t("character.showDescription");
 
   return (
     <div className="mafia-page flex justify-center items-center sm:items-center flex-col px-2 py-3" id="global-page">
@@ -111,8 +118,8 @@ const CharacterGamePage = () => {
               onClick={() => setShowRoleDescription((prev) => !prev)}
               disabled={!canShowRoleDescription}
               className="mafia-btn mafia-btn--icon mafia-btn--tiny"
-              title={showRoleDescription ? "Скрыть описание роли" : "Показать описание роли"}
-              aria-label={showRoleDescription ? "Скрыть описание роли" : "Показать описание роли"}
+              title={descriptionToggleLabel}
+              aria-label={descriptionToggleLabel}
             >
               <CircleHelp size={16} />
               {showRoleDescription ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
@@ -123,8 +130,8 @@ const CharacterGamePage = () => {
               onClick={handleLeaveRoom}
               disabled={isLeaving}
               className="mafia-btn mafia-btn--icon mafia-btn--tiny"
-              title="Покинуть комнату"
-              aria-label="Покинуть комнату"
+              title={t("character.leave")}
+              aria-label={t("character.leave")}
             >
               {isLeaving ? <LoaderCircle size={16} className="animate-spin" /> : <LogOut size={16} />}
             </button>
@@ -133,18 +140,18 @@ const CharacterGamePage = () => {
 
         {showRoleDescription && canShowRoleDescription && (
           <div className="absolute top-[94px] right-4 sm:right-6 z-30 w-[320px] max-w-[calc(100%-2rem)] mafia-panel-strong p-4 shadow-[0_14px_28px_rgba(37,5,6,0.2)]">
-            <p className="text-sm font-bold uppercase tracking-wide opacity-70 mb-2">Профессия</p>
+            <p className="text-sm font-bold uppercase tracking-wide opacity-70 mb-2">{t("character.profession")}</p>
             <p className="text-base text-sm font-semibold leading-relaxed">{roleDescription}</p>
           </div>
         )}
 
         <div className="w-full flex items-center justify-center">
           {!playerData || !playerData.character ? (
-            <h1 className="text-3xl font-bold">ЖДИТЕ!</h1>
+            <h1 className="text-3xl font-bold">{t("character.wait")}</h1>
           ) : playerData.eliminated ? (
             <div className="mafia-panel-strong w-full max-w-[380px] min-h-[260px] flex flex-col items-center justify-center p-6 text-center">
-              <h2 className="text-3xl font-black text-red-600">ВЫ ВЫБЫЛИ</h2>
-              <p className="mt-2 text-lg font-semibold">из игры</p>
+              <h2 className="text-3xl font-black text-red-600">{t("character.out")}</h2>
+              <p className="mt-2 text-lg font-semibold">{t("character.outSub")}</p>
             </div>
           ) : (
             <CharacterList character={playerData.character} />

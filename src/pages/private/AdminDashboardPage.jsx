@@ -12,27 +12,26 @@ import {
 } from "lucide-react";
 import { deletePlayer, deleteRoom, getAllRooms } from "../../services/gameService";
 import { ADMIN_PERSIST_KEY, ADMIN_SESSION_KEY } from "../../constants/admin";
+import { useLanguage } from "../../i18n/LanguageContext";
+import { getRoleName } from "../../i18n/roles";
 
-const formatCreatedAt = (value) => {
+const formatCreatedAt = (value, language, t) => {
   const ts = Number(value);
-  if (!ts) return "Неизвестно";
-  return new Date(ts).toLocaleString();
+  if (!ts) return t("common.unknown");
+  return new Date(ts).toLocaleString(language);
 };
 
-const getCharacterLabel = (character) => {
-  if (!character) return "Не назначен";
+const getCharacterLabel = (character, language, t) => {
+  if (!character) return t("admin.notAssigned");
   if (typeof character === "string") return character;
-  if (typeof character === "object" && character.name) return character.name;
-  return "Неизвестно";
+  if (typeof character === "object" && character.name) return getRoleName(character, language);
+  return t("common.unknown");
 };
 
-const getRoomStatus = (players) => {
-  if (!players.length) return "Лобби";
-  const hasAssignedRoles = players.some((player) => !!player.character);
-  return hasAssignedRoles ? "В игре" : "Лобби";
-};
+const hasAssignedRoles = (players) => players.some((player) => !!player.character);
 
 const AdminDashboardPage = () => {
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
   const [rooms, setRooms] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -46,12 +45,12 @@ const AdminDashboardPage = () => {
       );
       setRooms(sortedRooms);
     } catch (error) {
-      toast.error("Не удалось загрузить комнаты");
+      toast.error(t("admin.loadError"));
       console.error(error);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     const hasSessionAccess = sessionStorage.getItem(ADMIN_SESSION_KEY) === "true";
@@ -85,10 +84,10 @@ const AdminDashboardPage = () => {
     setBusyKey(`room-${room.id}`);
     try {
       await deleteRoom(room.id);
-      toast.success(`Комната ${room.customId} удалена`);
+      toast.success(t("admin.roomDeleted", { id: room.customId }));
       await fetchRooms();
     } catch (error) {
-      toast.error("Не удалось удалить комнату");
+      toast.error(t("admin.roomDeleteError"));
       console.error(error);
     } finally {
       setBusyKey("");
@@ -99,10 +98,10 @@ const AdminDashboardPage = () => {
     setBusyKey(`player-${playerId}`);
     try {
       await deletePlayer(roomId, playerId);
-      toast.success("Игрок удален");
+      toast.success(t("admin.playerDeleted"));
       await fetchRooms();
     } catch (error) {
-      toast.error("Не удалось удалить игрока");
+      toast.error(t("admin.playerDeleteError"));
       console.error(error);
     } finally {
       setBusyKey("");
@@ -122,11 +121,11 @@ const AdminDashboardPage = () => {
       <div className="max-w-6xl mx-auto flex flex-col gap-4">
         <div className="mafia-shell p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-4">
-            <img src="/mafia-logo.png" className="w-14 h-14" alt="Логотип Мафии" />
+            <img src="/mafia-logo.png" className="w-14 h-14" alt={t("admin.logoAlt")} />
             <div>
-              <h1 className="text-3xl sm:text-4xl font-black">Дашборд</h1>
+              <h1 className="text-3xl sm:text-4xl font-black">{t("admin.title")}</h1>
               <p className="font-semibold">
-                Комнат: {rooms.length} | Игроков: {totalPlayers}
+                {t("admin.totals", { rooms: rooms.length, players: totalPlayers })}
               </p>
             </div>
           </div>
@@ -139,7 +138,7 @@ const AdminDashboardPage = () => {
               className="mafia-btn mafia-btn--icon"
             >
               <RefreshCcw size={18} />
-              Обновить
+              {t("admin.refresh")}
             </button>
             <button
               type="button"
@@ -147,14 +146,14 @@ const AdminDashboardPage = () => {
               className="mafia-btn mafia-btn--icon"
             >
               <LogOut size={18} />
-              Выйти
+              {t("admin.logout")}
             </button>
           </div>
         </div>
 
         {rooms.length === 0 ? (
           <div className="mafia-shell p-8 text-center font-black text-2xl">
-            Нет активных комнат
+            {t("admin.noRooms")}
           </div>
         ) : (
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
@@ -165,7 +164,8 @@ const AdminDashboardPage = () => {
                     ...player,
                   }))
                 : [];
-              const roomStatus = getRoomStatus(players);
+              const isInGame = hasAssignedRoles(players);
+              const roomStatus = isInGame ? t("admin.inGame") : t("admin.lobby");
               const assignedRolesCount = players.filter((player) => !!player.character).length;
               const alivePlayers = players.filter((player) => !player.eliminated).length;
               const eliminatedPlayers = players.length - alivePlayers;
@@ -175,27 +175,32 @@ const AdminDashboardPage = () => {
                 <div key={room.id} className="mafia-shell p-4 flex flex-col gap-4">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                     <div>
-                      <p className="text-xl font-black">ID комнаты: {room.customId}</p>
+                      <p className="text-xl font-black">{t("admin.roomId", { id: room.customId })}</p>
                       <p
                         className={`inline-flex rounded-full px-2 py-1 text-xs font-bold ${
-                          roomStatus === "В игре"
+                          isInGame
                             ? "bg-green-600 text-white"
                             : "bg-yellow-400 text-[#250506]"
                         }`}
                       >
-                        Статус: {roomStatus}
+                        {t("admin.status", { status: roomStatus })}
                       </p>
                       <p className="font-semibold flex items-center gap-2">
                         <Users size={16} />
-                        Игроков: {players.length}
+                        {t("admin.playersLine", { count: players.length })}
                       </p>
                       <p className="text-sm font-medium">
-                        Присоединились: {players.length} | С ролью: {assignedRolesCount}
+                        {t("admin.joinedLine", {
+                          joined: players.length,
+                          assigned: assignedRolesCount,
+                        })}
                       </p>
-                      <p className="text-sm font-medium">Firebase ID: {room.id}</p>
-                      <p className="text-sm font-medium">Создана: {formatCreatedAt(room.createdAt)}</p>
+                      <p className="text-sm font-medium">{t("admin.firebaseId", { id: room.id })}</p>
                       <p className="text-sm font-medium">
-                        Живых: {alivePlayers} | Выбыло: {eliminatedPlayers}
+                        {t("admin.created", { date: formatCreatedAt(room.createdAt, language, t) })}
+                      </p>
+                      <p className="text-sm font-medium">
+                        {t("admin.aliveLine", { alive: alivePlayers, out: eliminatedPlayers })}
                       </p>
                     </div>
 
@@ -206,7 +211,7 @@ const AdminDashboardPage = () => {
                         className="mafia-btn mafia-btn--icon"
                       >
                         <Play size={16} />
-                        Открыть
+                        {t("admin.open")}
                       </button>
                       <button
                         type="button"
@@ -215,13 +220,13 @@ const AdminDashboardPage = () => {
                         className="mafia-btn mafia-btn--danger mafia-btn--icon"
                       >
                         {roomBusy ? <LoaderCircle size={16} className="animate-spin" /> : <Trash2 size={16} />}
-                        Удалить
+                        {t("admin.delete")}
                       </button>
                     </div>
                   </div>
 
                   {players.length === 0 ? (
-                    <p className="font-semibold">В этой комнате нет игроков.</p>
+                    <p className="font-semibold">{t("admin.noPlayers")}</p>
                   ) : (
                     <div className="mafia-panel-strong p-3 flex flex-col gap-2 max-h-72 overflow-auto">
                       {players.map((player) => {
@@ -230,13 +235,19 @@ const AdminDashboardPage = () => {
                         return (
                           <div key={player.id} className="mafia-panel bg-white p-2 flex items-center justify-between gap-2">
                             <div className="min-w-0">
-                              <p className="font-bold truncate">{player.name || "Игрок"}</p>
-                              <p className="text-xs opacity-80 truncate">ID игрока: {player.id}</p>
+                              <p className="font-bold truncate">{player.name || t("common.player")}</p>
                               <p className="text-xs opacity-80 truncate">
-                                Роль: {getCharacterLabel(player.character)}
+                                {t("admin.playerId", { id: player.id })}
                               </p>
                               <p className="text-xs opacity-80 truncate">
-                                Выбыл: {player.eliminated ? "Да" : "Нет"}
+                                {t("admin.role", {
+                                  role: getCharacterLabel(player.character, language, t),
+                                })}
+                              </p>
+                              <p className="text-xs opacity-80 truncate">
+                                {t("admin.eliminated", {
+                                  value: player.eliminated ? t("common.yes") : t("common.no"),
+                                })}
                               </p>
                             </div>
 
@@ -251,7 +262,7 @@ const AdminDashboardPage = () => {
                               ) : (
                                 <CircleX size={14} />
                               )}
-                              Кик
+                              {t("common.kick")}
                             </button>
                           </div>
                         );

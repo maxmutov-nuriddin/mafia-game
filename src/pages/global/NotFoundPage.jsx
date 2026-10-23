@@ -2,8 +2,10 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 import { Undo2 } from "lucide-react";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 const NotFoundPage = () => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   return (
@@ -25,7 +27,7 @@ const NotFoundPage = () => {
             </svg>
           </div>
           <div className="tooltip mafia-shell">
-            <p className="text-[#250506] text-xl">Страница не найдена</p>
+            <p className="text-[#250506] text-xl">{t("notfound.title")}</p>
             <button
               onClick={() => navigate("/")}
               className="mafia-btn mafia-btn--icon mt-8 mx-auto"

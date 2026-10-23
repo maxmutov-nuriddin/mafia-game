@@ -10,9 +10,8 @@ import {
   registerWithEmail,
   subscribeAuthState,
 } from "../services/authService";
-
-const LANGUAGE_STORAGE_KEY = "mafia-ui-language";
-const LANGUAGE_OPTIONS = ["uz", "ru", "en"];
+import { useLanguage } from "../i18n/LanguageContext";
+import { LANGUAGE_OPTIONS } from "../i18n/translations";
 
 const ProfileAuthWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -23,11 +22,7 @@ const ProfileAuthWidget = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [user, setUser] = useState(null);
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
-  const [language, setLanguage] = useState(() => {
-    if (typeof window === "undefined") return "ru";
-    const savedLanguage = window.localStorage.getItem(LANGUAGE_STORAGE_KEY);
-    return LANGUAGE_OPTIONS.includes(savedLanguage) ? savedLanguage : "ru";
-  });
+  const { t, language, setLanguage } = useLanguage();
   const langMenuRef = useRef(null);
   const navigate = useNavigate();
 
@@ -38,12 +33,6 @@ const ProfileAuthWidget = () => {
 
     return () => unsubscribe();
   }, []);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
-    document.documentElement.setAttribute("lang", language);
-  }, [language]);
 
   useEffect(() => {
     const handlePointerDown = (event) => {
@@ -59,11 +48,11 @@ const ProfileAuthWidget = () => {
   const hasAccountUser = !!user && !user.isAnonymous;
 
   const profileLabel = useMemo(() => {
-    if (!hasAccountUser) return "Профиль";
+    if (!hasAccountUser) return t("auth.profile");
     if (user.displayName) return user.displayName;
     if (user.email) return user.email.split("@")[0];
-    return "Пользователь";
-  }, [hasAccountUser, user]);
+    return t("auth.user");
+  }, [hasAccountUser, user, t]);
 
   const resetForm = () => {
     setEmail("");
@@ -76,12 +65,12 @@ const ProfileAuthWidget = () => {
     if (isLoading) return;
 
     if (!email.trim() || !password.trim()) {
-      toast.info("Введите email и пароль.");
+      toast.info(t("auth.enterCredentials"));
       return;
     }
 
     if (mode === "register" && password !== confirmPassword) {
-      toast.warn("Пароли не совпадают.");
+      toast.warn(t("auth.passwordMismatch"));
       return;
     }
 
@@ -89,10 +78,10 @@ const ProfileAuthWidget = () => {
     try {
       if (mode === "register") {
         await registerWithEmail(email.trim(), password);
-        toast.success("Регистрация выполнена.");
+        toast.success(t("auth.registered"));
       } else {
         await loginWithEmail(email.trim(), password);
-        toast.success("Вход выполнен.");
+        toast.success(t("auth.loggedIn"));
       }
       resetForm();
       setIsOpen(false);
@@ -109,7 +98,7 @@ const ProfileAuthWidget = () => {
     setIsLoading(true);
     try {
       await loginWithGoogle();
-      toast.success("Вход через Google выполнен.");
+      toast.success(t("auth.googleLoggedIn"));
       setIsOpen(false);
     } catch (error) {
       toast.error(getAuthErrorMessage(error));
@@ -121,7 +110,7 @@ const ProfileAuthWidget = () => {
   const handleLogout = async () => {
     try {
       await logoutUser();
-      toast.info("Вы вышли из аккаунта.");
+      toast.info(t("auth.loggedOut"));
       setIsOpen(false);
     } catch (error) {
       toast.error(getAuthErrorMessage(error));
@@ -135,9 +124,6 @@ const ProfileAuthWidget = () => {
   };
 
   const handleLanguageChange = (nextLanguage) => {
-    if (nextLanguage !== language) {
-      toast.info("Скоро Mafia 2.2");
-    }
     setLanguage(nextLanguage);
     setIsLangMenuOpen(false);
   };
@@ -152,7 +138,7 @@ const ProfileAuthWidget = () => {
             className="mafia-btn mafia-btn--icon !rounded-xl !px-3 !py-2 uppercase"
             aria-haspopup="menu"
             aria-expanded={isLangMenuOpen}
-            aria-label="Language switcher"
+            aria-label={t("common.langSwitcher")}
           >
             {language}
           </button>
@@ -194,19 +180,23 @@ const ProfileAuthWidget = () => {
             type="button"
             onClick={() => setIsOpen(false)}
             className="fixed inset-0 z-[130] bg-[#250506]/45"
-            aria-label="Close auth modal"
+            aria-label={t("common.closeModal")}
           />
 
           <div className="mafia-shell fixed top-16 left-1/2 -translate-x-1/2 sm:left-auto sm:translate-x-0 sm:right-3 z-[140] w-[min(360px,calc(100vw-1.25rem))] shadow-[0_20px_48px_rgba(0,0,0,0.32)] overflow-hidden">
             <div className="flex items-center justify-between px-4 py-3 bg-[#250506] text-[#DBD0C0]">
               <h3 className="text-lg font-black">
-                {hasAccountUser ? "Профиль" : mode === "login" ? "Вход" : "Регистрация"}
+                {hasAccountUser
+                  ? t("auth.profile")
+                  : mode === "login"
+                    ? t("auth.login")
+                    : t("auth.register")}
               </h3>
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
                 className="mafia-btn mafia-btn--sm"
-                aria-label="Close"
+                aria-label={t("common.close")}
               >
                 <X size={16} />
               </button>
@@ -216,7 +206,7 @@ const ProfileAuthWidget = () => {
               {hasAccountUser ? (
                 <div className="flex flex-col gap-3">
                   <div className="mafia-panel bg-white p-3">
-                    <p className="text-sm opacity-75">Вы вошли как</p>
+                    <p className="text-sm opacity-75">{t("auth.signedInAs")}</p>
                     <p className="font-bold break-all">{user.email || profileLabel}</p>
                   </div>
 
@@ -225,7 +215,7 @@ const ProfileAuthWidget = () => {
                     onClick={handleCreateGameFromProfile}
                     className="mafia-btn mafia-btn--primary w-full"
                   >
-                    Создать игру с выбором ролей
+                    {t("auth.createWithRoles")}
                   </button>
 
                   <button
@@ -234,7 +224,7 @@ const ProfileAuthWidget = () => {
                     className="mafia-btn w-full"
                   >
                     <LogOut size={16} />
-                    Выйти
+                    {t("auth.logout")}
                   </button>
                 </div>
               ) : (
@@ -249,7 +239,7 @@ const ProfileAuthWidget = () => {
                           : ""
                       }`}
                     >
-                      Вход
+                      {t("auth.login")}
                     </button>
                     <button
                       type="button"
@@ -260,7 +250,7 @@ const ProfileAuthWidget = () => {
                           : ""
                       }`}
                     >
-                      Регистрация
+                      {t("auth.register")}
                     </button>
                   </div>
 
@@ -271,12 +261,12 @@ const ProfileAuthWidget = () => {
                     className="mafia-btn w-full"
                   >
                     <Chrome size={16} />
-                    Продолжить через Google
+                    {t("auth.google")}
                   </button>
 
                   <div className="flex items-center gap-2 text-[#250506]/55">
                     <div className="h-px flex-1 bg-[#250506]/25" />
-                    <span className="text-xs font-semibold">или</span>
+                    <span className="text-xs font-semibold">{t("auth.or")}</span>
                     <div className="h-px flex-1 bg-[#250506]/25" />
                   </div>
 
@@ -294,7 +284,7 @@ const ProfileAuthWidget = () => {
                       />
                     </div>
 
-                    <label className="text-sm font-semibold">Пароль</label>
+                    <label className="text-sm font-semibold">{t("auth.password")}</label>
                     <div className="relative">
                       <Lock size={16} className="mafia-input-icon" />
                       <input
@@ -309,7 +299,7 @@ const ProfileAuthWidget = () => {
 
                     {mode === "register" && (
                       <>
-                        <label className="text-sm font-semibold">Подтвердите пароль</label>
+                        <label className="text-sm font-semibold">{t("auth.confirmPassword")}</label>
                         <input
                           type="password"
                           value={confirmPassword}
@@ -326,7 +316,11 @@ const ProfileAuthWidget = () => {
                       disabled={isLoading}
                       className="mafia-btn mafia-btn--primary mt-1 w-full"
                     >
-                      {isLoading ? "Подождите..." : mode === "login" ? "Войти" : "Зарегистрироваться"}
+                      {isLoading
+                        ? t("auth.wait")
+                        : mode === "login"
+                          ? t("auth.signIn")
+                          : t("auth.signUp")}
                     </button>
                   </form>
                 </div>

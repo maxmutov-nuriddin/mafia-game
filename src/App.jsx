@@ -19,6 +19,8 @@ import Animated from "./pages/animated/Animated";
 import ProfileAuthWidget from "./components/ProfileAuthWidget";
 import { LoaderCircle } from "lucide-react";
 import { ensureAnonymousAuth, subscribeAuthState } from "./services/authService";
+import FortisWebCredit from "./components/FortisWebCredit";
+import { translate as t } from "./i18n/LanguageContext";
 
 // Firebase service imports
 import {
@@ -104,18 +106,16 @@ function App() {
             MY_TELEGRAM_ID,
             `DB to'ldi!\n\nXonalar soni: ${totalRooms}\nO'yinchilar soni: ${totalPlayers}\n\nIltimos, tozalab bering.`
           );
-          toast.info(
-            `Hozirda barcha joylar bandligi sababli tizimga qo'shilish imkoni mavjud emas. Iltimos, biroz kuting va 1 daqiqadan so'ng sahifani yangilab ko'ring.`
-          );
+          toast.info(t("app.fullNoticeText"));
         } catch (err) {
           console.error("Admin uchun xato:", err);
-          toast.error("Ошибка отправки уведомления администратору.");
+          toast.error(t("app.adminNotifyError"));
         }
       }
 
     } catch (e) {
       console.error("Ошибка анализа:", e);
-      toast.error("Analizda xatolik: " + e.message);
+      toast.error(t("app.analysisError", { message: e.message }));
     } finally {
       console.log("Analysis complete");
       isFetching.current = false;
@@ -139,7 +139,7 @@ function App() {
         await ensureAnonymousAuth();
       } catch (error) {
         console.error("Anonymous auth error:", error);
-        toast.error("Ошибка гостевого входа. Обновите страницу.");
+        toast.error(t("app.guestLoginError"));
         if (isMounted) {
           setAuthReady(true);
         }
@@ -167,7 +167,7 @@ function App() {
       return { games: stats.rooms, users: stats.players };
     } catch (error) {
       console.error("Ошибка при очистке:", error);
-      toast.error("Ошибка при очистке данных.");
+      toast.error(t("app.clearError"));
       return { games: 0, users: 0 };
     }
   };
@@ -189,7 +189,7 @@ function App() {
       });
     } catch (err) {
       console.error("Ошибка при отправке сообщения:", err);
-      toast.error("Ошибка при отправке сообщения.");
+      toast.error(t("app.sendError"));
     }
   }
 
@@ -248,7 +248,7 @@ function App() {
         }
       } catch (err) {
         console.error("Ошибка в Telegram polling:", err);
-        toast.error("Ошибка в Telegram polling.");
+        toast.error(t("app.pollingError"));
       }
     }, 5000); // every 5 sec
 
@@ -261,10 +261,10 @@ function App() {
 
     try {
       await createRoom(newId);
-      toast.success(`Комната создана! ID: ${newId}`);
+      toast.success(t("app.roomCreated", { id: newId }));
     } catch (error) {
       console.error("Create room error:", error);
-      toast.error("Ошибка создания комнаты: " + error.message);
+      toast.error(t("app.roomCreateError", { message: error.message }));
     }
 
     return newId;
@@ -276,14 +276,14 @@ function App() {
       const room = await getRoomByCustomId(roomId);
 
       if (!room) {
-        toast.warn("Комната с таким ID не найдена.");
+        toast.warn(t("app.roomNotFound"));
         return false;
       }
 
       const players = await getPlayersInRoom(room.id);
 
       if (!players || players.length === 0) {
-        toast.warn("В этой комнате пока нет игроков.");
+        toast.warn(t("app.noPlayers"));
         return false;
       }
 
@@ -292,7 +292,7 @@ function App() {
         : [];
 
       if (normalizedSelectedCharacters.length > players.length) {
-        toast.warn("Игроков меньше, чем выбранных ролей. Уберите лишние роли.");
+        toast.warn(t("app.tooManyRoles"));
         return false;
       }
 
@@ -302,7 +302,7 @@ function App() {
         shuffled.find((character) => character.name === "Мирный житель");
 
       if (!citizenRole) {
-        toast.error("Не найдена роль Мирный житель.");
+        toast.error(t("app.citizenMissing"));
         return false;
       }
 
@@ -331,14 +331,14 @@ function App() {
 
       toast.success(
         normalizedSelectedCharacters.length > 0
-          ? "Роли назначены по выбранному набору."
-          : "Роли назначены автоматически."
+          ? t("app.rolesAssignedCustom")
+          : t("app.rolesAssignedAuto")
       );
 
       return true;
     } catch (error) {
       console.error("Character assignment error:", error);
-      toast.error("Ошибка при назначении ролей.");
+      toast.error(t("app.rolesAssignError"));
       return false;
     }
   };
@@ -359,6 +359,7 @@ function App() {
           transition={Slide}
         />
         <ProfileWidgetByRoute showWhenReady={animDesign && authReady} />
+        <FortisWebCredit />
         {
           !animDesign ? (
             <Animated onFinish={() => setAnimDesign(true)} />

@@ -14,8 +14,10 @@ import {
   getRememberedPlayerId,
   rememberPlayerSession,
 } from "../../utils/playerSession";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 const JoinGamePage = () => {
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [gameId, setGameId] = useState("");
   const [username, setUsername] = useState("");
@@ -60,7 +62,7 @@ const JoinGamePage = () => {
       const room = await getRoomByCustomId(cleanGameId);
 
       if (!room) {
-        toast.warn("Комната с таким ID не найдена!");
+        toast.warn(t("join.roomNotFound"));
         return;
       }
 
@@ -94,7 +96,7 @@ const JoinGamePage = () => {
           userId: existingByName.id,
           playerName: existingByName.name || playerName,
         });
-        toast.info("Вы уже были в этой комнате. Возвращаем к вашей карте.");
+        toast.info(t("join.alreadyIn"));
         navigate(`/character?userId=${existingByName.id}&gameId=${cleanGameId}`);
         return;
       }
@@ -113,7 +115,7 @@ const JoinGamePage = () => {
       navigate(`/character?userId=${cleanUserId}&gameId=${cleanGameId}`);
     } catch (error) {
       console.error(error);
-      toast.error("Ошибка при подключении к игре!");
+      toast.error(t("join.error"));
     } finally {
       setIsJoining(false);
     }
@@ -136,18 +138,18 @@ const JoinGamePage = () => {
           <Undo2 />
         </button>
         <img src="/mafia-logo.png" className="w-20 h-20" alt="" />
-        <h1 className="text-3xl sm:text-5xl font-black">Введите ID!</h1>
+        <h1 className="text-3xl sm:text-5xl font-black">{t("join.title")}</h1>
         <form className="flex flex-col gap-4" onSubmit={handleJoin}>
           <input
             type="number"
-            placeholder="Game ID"
+            placeholder={t("join.idPlaceholder")}
             value={gameId}
             onChange={(e) => setGameId(e.target.value)}
             className="mafia-input w-full sm:w-80 h-10 text-center font-black text-xl"
           />
           <input
             type="text"
-            placeholder="Имя игрока"
+            placeholder={t("join.namePlaceholder")}
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             className="mafia-input w-full sm:w-80 h-10 text-center font-black text-xl"
@@ -157,7 +159,7 @@ const JoinGamePage = () => {
             type="submit"
             className="mafia-btn w-full sm:w-80"
           >
-            Присоединиться к комнате!
+            {t("join.submit")}
           </button>
         </form>
       </div>

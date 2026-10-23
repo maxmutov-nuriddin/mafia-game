@@ -2,8 +2,10 @@
 import { useNavigate } from "react-router-dom";
 import { LoaderCircle } from "lucide-react";
 import { toast } from "react-toastify";
+import { useLanguage } from "../../i18n/LanguageContext";
 
 const StartGamePage = ({ IsFullRoom, IsFullGamer, generateId }) => {
+  const { t } = useLanguage();
   const [isStarting, setIsStarting] = useState(false);
 
   const createNavigate = useNavigate();
@@ -18,7 +20,7 @@ const StartGamePage = ({ IsFullRoom, IsFullGamer, generateId }) => {
       createNavigate(`/create/${newId}`);
     } catch (error) {
       console.error("Create room error:", error);
-      toast.error("Ошибка создания комнаты: " + error.message);
+      toast.error(t("app.roomCreateError", { message: error.message }));
       setIsStarting(false);
     }
   };
@@ -42,26 +44,26 @@ const StartGamePage = ({ IsFullRoom, IsFullGamer, generateId }) => {
     >
       <div className="mafia-shell px-4 sm:px-0 w-full sm:w-100 h-100 flex flex-col items-center justify-center gap-5 relative ">
         <img src="/mafia-logo.png" className="w-20 h-20" alt="" />
-        <h2 className="text-3xl sm:text-5xl font-black">Начать игру</h2>
+        <h2 className="text-3xl sm:text-5xl font-black">{t("start.title")}</h2>
         <div className="flex flex-col gap-4 ">
           <button
             onClick={handleStart}
             disabled={isStarting || IsFullRoom}
             className="mafia-btn w-full sm:w-80"
           >
-            {isStarting ? "Создаем комнату..." : "Создать комнату!"}
+            {isStarting ? t("start.creating") : t("start.create")}
           </button>
           <button
             disabled={IsFullGamer}
             onClick={handleJoin}
             className="mafia-btn w-full sm:w-80"
           >
-            Присоединиться к комнате!
+            {t("start.join")}
           </button>
         </div>
       </div>
       <h1 className="absolute text-sm font-black text-center bottom-1 text-[#dbd0c0]">
-        MVMAFIA 2.0 - играть в оффлайн Мафию бесплатно
+        MVMAFIA {t("app.version")} - {t("app.tagline")}
       </h1>
     </div>
   );

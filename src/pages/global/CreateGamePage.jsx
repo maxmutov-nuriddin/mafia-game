@@ -10,6 +10,8 @@ import {
 } from "../../services/gameService";
 import { characters } from "../../services/data";
 import { clearAllRememberedPlayerSessions } from "../../utils/playerSession";
+import { useLanguage } from "../../i18n/LanguageContext";
+import { getRoleName } from "../../i18n/roles";
 
 const CIVILIAN_ROLE_ID = 12;
 const PROFILE_ROLE_COUNTS_STORAGE_KEY = "mafia-profile-role-counts";
@@ -34,16 +36,19 @@ const getStoredRoleCounts = () => {
   }
 };
 
-const getRoleWord = (count) => {
+const getRoleWord = (count, t) => {
   const lastDigit = count % 10;
   const lastTwoDigits = count % 100;
 
-  if (lastDigit === 1 && lastTwoDigits !== 11) return "роль";
-  if ([2, 3, 4].includes(lastDigit) && ![12, 13, 14].includes(lastTwoDigits)) return "роли";
-  return "ролей";
+  if (lastDigit === 1 && lastTwoDigits !== 11) return t("plural.role.one");
+  if ([2, 3, 4].includes(lastDigit) && ![12, 13, 14].includes(lastTwoDigits)) {
+    return t("plural.role.few");
+  }
+  return t("plural.role.many");
 };
 
 const CreateGamePage = ({ startGame }) => {
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
   const { id } = useParams();
@@ -141,7 +146,7 @@ const CreateGamePage = ({ startGame }) => {
       }
 
       if (!room) {
-        toast.error("Комната не найдена. Попробуйте снова.");
+        toast.error(t("create.roomNotFound"));
         navigate("/");
         return;
       }
@@ -165,6 +170,7 @@ const CreateGamePage = ({ startGame }) => {
         cleanup.then((unsub) => unsub && unsub());
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- t is only used for a one-off toast
   }, [id, navigate]);
 
   const closeRoom = async () => {
@@ -175,7 +181,7 @@ const CreateGamePage = ({ startGame }) => {
       clearAllRememberedPlayerSessions();
       navigate("/");
     } catch (error) {
-      toast.error("Ошибка при закрытии комнаты");
+      toast.error(t("create.closeError"));
       console.error(error);
       setIsDeleting(false);
     }
@@ -208,18 +214,21 @@ const CreateGamePage = ({ startGame }) => {
 
     if (isProfileMode) {
       if (selectedRolesCount === 0) {
-        toast.warn("Сначала выберите хотя бы одну роль.");
+        toast.warn(t("create.pickRoleFirst"));
         return;
       }
 
       if (users.length === 0) {
-        toast.warn("Сначала дождитесь хотя бы одного игрока.");
+        toast.warn(t("create.waitPlayer"));
         return;
       }
 
       if (missingPlayersForRoles > 0) {
         toast.warn(
-          `Игроков мало: уберите ${missingPlayersForRoles} ${getRoleWord(missingPlayersForRoles)}.`
+          t("create.tooFewPlayers", {
+            count: missingPlayersForRoles,
+            word: getRoleWord(missingPlayersForRoles, t),
+          })
         );
         return;
       }
@@ -235,7 +244,7 @@ const CreateGamePage = ({ startGame }) => {
 
       navigate(`/gamestart/${id}`);
     } catch (error) {
-      toast.error("Ошибка при старте игры");
+      toast.error(t("create.startError"));
       console.error(error);
     } finally {
       setIsStarting(false);
@@ -248,9 +257,9 @@ const CreateGamePage = ({ startGame }) => {
     setKickingPlayerId(playerId);
     try {
       await deletePlayer(gameIdRef.current, playerId);
-      toast.success("Игрок удален из комнаты");
+      toast.success(t("create.kicked"));
     } catch (error) {
-      toast.error("Не удалось удалить игрока");
+      toast.error(t("create.kickError"));
       console.error(error);
     } finally {
       setKickingPlayerId("");
@@ -292,19 +301,19 @@ const CreateGamePage = ({ startGame }) => {
         {showPlayers && (
           <div className="mafia-panel-strong absolute right-4 top-16 z-20 w-[300px] overflow-hidden shadow-[0_12px_24px_rgba(37,5,6,0.18)]">
             <div className="flex items-center justify-between px-4 py-3 bg-[#ede1cf] border-b border-[#250506]/15">
-              <p className="font-black text-lg">Игроки ({users.length})</p>
+              <p className="font-black text-lg">{t("create.players", { count: users.length })}</p>
               <button
                 type="button"
                 onClick={() => setShowPlayers(false)}
                 className="mafia-btn mafia-btn--sm"
               >
                 <X size={12} />
-                Закрыть
+                {t("common.close")}
               </button>
             </div>
 
             {users.length === 0 ? (
-              <p className="text-sm opacity-80 p-4">Пока никто не присоединился.</p>
+              <p className="text-sm opacity-80 p-4">{t("create.noOneJoined")}</p>
             ) : (
               <div className="p-3 max-h-[240px] overflow-auto flex flex-col gap-2">
                 {users.map((user) => {
@@ -316,7 +325,7 @@ const CreateGamePage = ({ startGame }) => {
                           {(user.name || "P").slice(0, 1).toUpperCase()}
                         </div>
                         <p className="font-semibold text-sm truncate">
-                          {user.name || "Player"}
+                          {user.name || t("common.player")}
                         </p>
                       </div>
 
@@ -326,7 +335,7 @@ const CreateGamePage = ({ startGame }) => {
                         disabled={isKicking}
                         className="mafia-btn mafia-btn--sm"
                       >
-                        {isKicking ? "..." : "Кик"}
+                        {isKicking ? "..." : t("common.kick")}
                       </button>
                     </div>
                   );
@@ -341,15 +350,13 @@ const CreateGamePage = ({ startGame }) => {
 
         {isProfileMode ? (
           <div className="w-full mafia-panel p-3 bg-white/90">
-            <p className="font-black text-lg">Выбор ролей</p>
-            <p className="text-xs opacity-75 mt-1">
-              Выбирайте специальные роли. Мирные жители добавляются автоматически.
-            </p>
+            <p className="font-black text-lg">{t("create.rolePick")}</p>
+            <p className="text-xs opacity-75 mt-1">{t("create.rolePickHint")}</p>
 
             <div className="mt-3 max-h-[280px] overflow-auto flex flex-col gap-2 pr-1">
               {visibleProfileCharacters.length === 0 ? (
                 <div className="mafia-panel p-3 text-sm font-semibold text-center">
-                  Нет выбранных ролей. Вернитесь в настройку и выберите персонажей.
+                  {t("create.noRolesSelected")}
                 </div>
               ) : (
                 visibleProfileCharacters.map((character) => {
@@ -363,10 +370,12 @@ const CreateGamePage = ({ startGame }) => {
                     >
                       <img
                         src={imageSrc}
-                        alt={character.name}
+                        alt={getRoleName(character, language)}
                         className="w-10 h-10 object-contain"
                       />
-                      <p className="font-semibold text-sm flex-1 leading-tight">{character.name}</p>
+                      <p className="font-semibold text-sm flex-1 leading-tight">
+                        {getRoleName(character, language)}
+                      </p>
                       <button
                         type="button"
                         onClick={() => removeRole(character.id)}
@@ -390,20 +399,23 @@ const CreateGamePage = ({ startGame }) => {
             </div>
 
             <div className="mt-3 text-sm font-semibold">
-              <p>Игроков: {users.length}</p>
-              <p>Выбрано спецролей: {selectedRolesCount}</p>
-              <p>Авто-мирных жителей: {autoCitizenCount}</p>
+              <p>{t("create.playersCount", { count: users.length })}</p>
+              <p>{t("create.specialRolesCount", { count: selectedRolesCount })}</p>
+              <p>{t("create.autoCitizens", { count: autoCitizenCount })}</p>
             </div>
 
             {missingPlayersForRoles > 0 && (
               <div className="mt-3 mafia-panel-strong p-2 text-sm font-bold text-[#8f1d1f] bg-[#ffe3e3] border border-[#8f1d1f]/25">
-                Игроков мало: уберите {missingPlayersForRoles} {getRoleWord(missingPlayersForRoles)}.
+                {t("create.tooFewPlayers", {
+                  count: missingPlayersForRoles,
+                  word: getRoleWord(missingPlayersForRoles, t),
+                })}
               </div>
             )}
           </div>
         ) : (
           <p className="text-sm font-semibold opacity-75 text-center">
-            Стандартный режим: роли распределяются автоматически.
+            {t("create.standardMode")}
           </p>
         )}
 
@@ -417,7 +429,7 @@ const CreateGamePage = ({ startGame }) => {
             }
             className="mafia-btn sm:w-[100%]"
           >
-            {isStarting ? "Игра начинается..." : "Начать игру!"}
+            {isStarting ? t("create.starting") : t("create.start")}
           </button>
         </div>
       </div>

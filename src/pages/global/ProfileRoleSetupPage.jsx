@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { LoaderCircle, Undo2 } from "lucide-react";
 import { toast } from "react-toastify";
 import { characters } from "../../services/data";
+import { useLanguage } from "../../i18n/LanguageContext";
+import { getRoleName } from "../../i18n/roles";
 
 const CIVILIAN_ROLE_ID = 12;
 const PROFILE_ROLE_COUNTS_STORAGE_KEY = "mafia-profile-role-counts";
@@ -27,14 +29,15 @@ const getStoredRoleCounts = () => {
   }
 };
 
-const getFactionByRoleId = (roleId) => {
+const getFactionByRoleId = (roleId, t) => {
   const id = Number(roleId);
-  if (id >= 1 && id <= 3) return { label: "Мафия", tone: "mafia" };
-  if (id >= 13) return { label: "Нейтрал", tone: "neutral" };
-  return { label: "Город", tone: "city" };
+  if (id >= 1 && id <= 3) return { label: t("faction.mafia"), tone: "mafia" };
+  if (id >= 13) return { label: t("faction.neutral"), tone: "neutral" };
+  return { label: t("faction.city"), tone: "city" };
 };
 
 const ProfileRoleSetupPage = ({ generateId }) => {
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
   const [isCreatingRoom, setIsCreatingRoom] = useState(false);
   const [selectedRoleCounts, setSelectedRoleCounts] = useState(getStoredRoleCounts);
@@ -89,11 +92,11 @@ const ProfileRoleSetupPage = ({ generateId }) => {
   const handleCreateRoom = async () => {
     if (isCreatingRoom) return;
     if (!hasSelectedRoles) {
-      toast.warn("Сначала выберите хотя бы одну роль.");
+      toast.warn(t("setup.pickRoleFirst"));
       return;
     }
     if (typeof generateId !== "function") {
-      toast.error("Функция создания комнаты недоступна.");
+      toast.error(t("setup.createUnavailable"));
       return;
     }
 
@@ -101,7 +104,7 @@ const ProfileRoleSetupPage = ({ generateId }) => {
     try {
       const newId = await generateId();
       if (!newId) {
-        toast.error("Не удалось создать комнату.");
+        toast.error(t("setup.createFailed"));
         return;
       }
 
@@ -109,7 +112,7 @@ const ProfileRoleSetupPage = ({ generateId }) => {
         state: { selectedRoleCounts },
       });
     } catch (error) {
-      toast.error("Ошибка при создании комнаты: " + (error?.message || ""));
+      toast.error(t("setup.createError", { message: error?.message || "" }));
     } finally {
       setIsCreatingRoom(false);
     }
@@ -142,37 +145,36 @@ const ProfileRoleSetupPage = ({ generateId }) => {
 
           <div className="profile-setup-brand">
             <img src="/mafia-logo.png" className="w-16 h-16 sm:w-18 sm:h-18" alt="Mafia" />
-            <span className="profile-setup-kicker">Профильный режим</span>
+            <span className="profile-setup-kicker">{t("setup.kicker")}</span>
           </div>
         </div>
 
-        <h1 className="profile-setup-title">Настройка ролей</h1>
+        <h1 className="profile-setup-title">{t("setup.title")}</h1>
 
         <div className="profile-setup-panel mafia-panel">
-          <p className="profile-setup-description">
-            Шаг 1: выберите специальные роли. После создания комнаты мирные жители будут добавлены автоматически.
-          </p>
+          <p className="profile-setup-description">{t("setup.step1")}</p>
 
           <div className="profile-setup-list" role="list">
             {selectableCharacters.map((character) => {
               const count = Number(selectedRoleCounts[character.id] || 0);
               const imageSrc = String(character.img || "").replace("./", "/");
-              const faction = getFactionByRoleId(character.id);
+              const faction = getFactionByRoleId(character.id, t);
+              const roleName = getRoleName(character, language);
 
               return (
                 <div key={character.id} className="profile-setup-role mafia-panel" role="listitem">
                   <div className="profile-setup-role-media">
-                    <img src={imageSrc} alt={character.name} className="profile-setup-role-img" />
+                    <img src={imageSrc} alt={roleName} className="profile-setup-role-img" />
                   </div>
 
                   <div className="profile-setup-role-main">
-                    <p className="profile-setup-role-name">{character.name}</p>
+                    <p className="profile-setup-role-name">{roleName}</p>
                     <span className={`profile-setup-role-tag profile-setup-role-tag--${faction.tone}`}>
                       {faction.label}
                     </span>
                   </div>
 
-                  <div className="profile-setup-counter" aria-label={`Количество роли ${character.name}`}>
+                  <div className="profile-setup-counter" aria-label={t("setup.roleCount", { name: roleName })}>
                     <button
                       type="button"
                       onClick={() => removeRole(character.id)}
@@ -197,10 +199,10 @@ const ProfileRoleSetupPage = ({ generateId }) => {
 
           <div className="profile-setup-summary mafia-panel-strong">
             <div>
-              <p className="profile-setup-summary-label">Выбрано спецролей</p>
+              <p className="profile-setup-summary-label">{t("setup.selected")}</p>
               <p className="profile-setup-summary-value">{selectedRolesCount}</p>
             </div>
-            <p className="profile-setup-summary-note">Шаг 2: создайте комнату и ждите подключение игроков.</p>
+            <p className="profile-setup-summary-note">{t("setup.step2")}</p>
           </div>
         </div>
 
@@ -211,7 +213,7 @@ const ProfileRoleSetupPage = ({ generateId }) => {
             disabled={!hasSelectedRoles}
             className="mafia-btn profile-setup-clear"
           >
-            Очистить все
+            {t("setup.clear")}
           </button>
 
           <button
@@ -220,7 +222,7 @@ const ProfileRoleSetupPage = ({ generateId }) => {
             disabled={!hasSelectedRoles}
             className="mafia-btn mafia-btn--primary profile-setup-submit"
           >
-            Создать комнату
+            {t("setup.create")}
           </button>
         </div>
       </div>

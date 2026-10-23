@@ -12,6 +12,8 @@ import {
   listenToRoomPlayers,
 } from "../../services/gameService";
 import { clearAllRememberedPlayerSessions } from "../../utils/playerSession";
+import { useLanguage } from "../../i18n/LanguageContext";
+import { getRoleName } from "../../i18n/roles";
 
 const ROOM_LIFETIME_SECONDS = 900;
 
@@ -20,6 +22,7 @@ const sortPlayers = (players = []) => {
 };
 
 const GameStartPage = () => {
+  const { t, language } = useLanguage();
   const navigate = useNavigate();
   const { id } = useParams();
 
@@ -47,7 +50,7 @@ const GameStartPage = () => {
 
         if (!key) return;
 
-        const name = typeof character === "string" ? character : character.name || "Без названия";
+        const name = getRoleName(character, language);
         const existing = statsMap.get(key);
 
         if (existing) {
@@ -57,8 +60,8 @@ const GameStartPage = () => {
         }
       });
 
-    return Array.from(statsMap.values()).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, "ru"));
-  }, [activePlayers]);
+    return Array.from(statsMap.values()).sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, language));
+  }, [activePlayers, language]);
   const duplicateCharactersCount = useMemo(
     () => characterStats.reduce((acc, character) => acc + Math.max(character.count - 1, 0), 0),
     [characterStats]
@@ -94,7 +97,7 @@ const GameStartPage = () => {
       navigate("/");
     } catch (error) {
       console.error(error);
-      toast.error("Ошибка при закрытии комнаты");
+      toast.error(t("game.closeError"));
       setIsStarting(false);
     }
   };
@@ -103,12 +106,12 @@ const GameStartPage = () => {
     clearTimeout(timerRef.current);
     timerRef.current = setTimeout(closeRoom, ROOM_LIFETIME_SECONDS * 1000);
     setTimeLeft(ROOM_LIFETIME_SECONDS);
-    toast.success("Время комнаты продлено");
+    toast.success(t("game.extended"));
   };
 
   const eliminateSelectedPlayers = async () => {
     if (selectedPlayers.length === 0) {
-      toast.warn("Выберите игроков для выбытия");
+      toast.warn(t("game.pickToEliminate"));
       return;
     }
 
@@ -135,11 +138,11 @@ const GameStartPage = () => {
         return next;
       });
 
-      toast.success(`Выбыло игроков: ${selectedPlayers.length}`);
+      toast.success(t("game.eliminatedCount", { count: selectedPlayers.length }));
       setSelectedPlayers([]);
     } catch (error) {
       console.error("Error eliminating players:", error);
-      toast.error("Ошибка при отметке выбывших");
+      toast.error(t("game.eliminateError"));
     } finally {
       setIsStarting(false);
     }
@@ -261,7 +264,7 @@ const GameStartPage = () => {
                 ))}
               </div>
             ) : (
-              <span className="text-[#DBD0C0] text-sm font-bold px-4">Нет активных игроков</span>
+              <span className="text-[#DBD0C0] text-sm font-bold px-4">{t("game.noActivePlayers")}</span>
             )}
           </div>
 
@@ -287,21 +290,21 @@ const GameStartPage = () => {
           <div className="mafia-panel game-start-sidebar w-full h-full p-3">
             <div className="h-full grid grid-rows-[1.12fr_0.7fr] gap-3">
               <div className="mafia-panel-strong game-start-timer-card rounded-2xl px-4 py-5 flex flex-col items-center justify-center text-center">
-                <p className="game-start-timer-label">Таймер</p>
+                <p className="game-start-timer-label">{t("game.timer")}</p>
                 <h1 className={`game-start-timer-value ${isTimerCritical ? "text-[#8f1d1f]" : ""}`}>
                   {formatTime(timeLeft)}
                 </h1>
                 <div className="game-start-meta">
-                  <span>{activePlayers.length} игроков</span>
-                  <span>{characterStats.length} ролей</span>
+                  <span>{t("game.playersCount", { count: activePlayers.length })}</span>
+                  <span>{t("game.rolesCount", { count: characterStats.length })}</span>
                 </div>
                 <div className="w-full max-w-[270px] mx-auto flex flex-col gap-3 mt-3">
                   <button className="mafia-btn" onClick={closeRoom} disabled={isStarting}>
-                    {isStarting ? "Комната закрывается..." : "Закрыть комнату"}
+                    {isStarting ? t("game.closing") : t("game.closeRoom")}
                   </button>
 
                   <button className="mafia-btn" onClick={startTimer}>
-                    Продлить комнату
+                    {t("game.extend")}
                   </button>
 
                   {selectedPlayers.length > 0 && (
@@ -310,7 +313,9 @@ const GameStartPage = () => {
                       onClick={eliminateSelectedPlayers}
                       disabled={isStarting}
                     >
-                      {isStarting ? "Отмечаем выбывших..." : `Выбить выбранных (${selectedPlayers.length})`}
+                      {isStarting
+                        ? t("game.eliminating")
+                        : t("game.eliminate", { count: selectedPlayers.length })}
                     </button>
                   )}
                 </div>
@@ -322,13 +327,13 @@ const GameStartPage = () => {
                     <>
                       <div className="game-start-roles-head">
                         <div className="game-start-roles-title-wrap">
-                          <p className="game-start-roles-kicker">Роли</p>
-                          <p className="game-start-roles-title">Персонажи в игре</p>
+                          <p className="game-start-roles-kicker">{t("game.roles")}</p>
+                          <p className="game-start-roles-title">{t("game.charactersInGame")}</p>
                         </div>
                         <div className="game-start-roles-badges">
                           <span className="game-start-roles-pill">
                             <strong>{characterStats.length}</strong>
-                            <small>Ролей</small>
+                            <small>{t("game.rolesPill")}</small>
                           </span>
                         </div>
                       </div>
@@ -348,7 +353,7 @@ const GameStartPage = () => {
                     </>
                   ) : (
                     <div className="game-start-roles-empty h-full flex items-center justify-center text-center text-xs font-semibold">
-                      Персонажи пока не назначены
+                      {t("game.noCharactersYet")}
                     </div>
                   )}
                 </div>
@@ -370,7 +375,7 @@ const GameStartPage = () => {
                 const isEliminated = !!player.eliminated;
                 const isSelected = selectedPlayers.includes(player.id);
                 const isFlipped = isEliminated || !!flippedPlayers[player.id];
-                const playerName = player.name || "Игрок";
+                const playerName = player.name || t("game.player");
 
                 return (
                   <div
@@ -402,7 +407,7 @@ const GameStartPage = () => {
 
                     {isEliminated && (
                       <div className="absolute top-4 left-4 z-10 bg-red-600 text-white px-2 py-1 rounded-full text-xs font-bold">
-                        Выбыл
+                        {t("game.eliminated")}
                       </div>
                     )}
 
@@ -425,9 +430,9 @@ const GameStartPage = () => {
                             id="card-bg-imgs"
                             className="mafia-role-card w-full h-full flex flex-col items-center justify-center px-4 text-center"
                           >
-                            <p className="text-sm font-semibold opacity-70">Игрок</p>
+                            <p className="text-sm font-semibold opacity-70">{t("game.player")}</p>
                             <p className="mt-2 text-3xl font-black break-words">{playerName}</p>
-                            <p className="mt-4 text-xs font-semibold opacity-80">Нажмите глаз, чтобы увидеть роль</p>
+                            <p className="mt-4 text-xs font-semibold opacity-80">{t("game.tapEye")}</p>
                           </div>
                         </div>
 
@@ -451,9 +456,9 @@ const GameStartPage = () => {
                 <div className="w-16 h-16 rounded-full border-2 border-[#250506]/20 bg-[#f4ede1] flex items-center justify-center">
                   <Users size={30} className="text-[#250506]/80" />
                 </div>
-                <h2 className="font-black text-3xl md:text-4xl leading-tight">Нет персонажей</h2>
+                <h2 className="font-black text-3xl md:text-4xl leading-tight">{t("game.noCharacters")}</h2>
                 <p className="text-sm md:text-base font-semibold opacity-75">
-                  Комната пока пуста. Дождитесь подключения игроков.
+                  {t("game.roomEmpty")}
                 </p>
               </div>
             )}
